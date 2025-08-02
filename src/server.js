@@ -1,5 +1,5 @@
 const express = require('express');
-const routes = require('./routes/analyze');
+const routes = require('../routes/analyze');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
