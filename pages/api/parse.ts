@@ -1,6 +1,6 @@
 // /cv-api/pages/api/parse.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { extractCVData } from '../../lib/extractCVData';
+import { extractCVData } from '../../utils/extractCVData';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
