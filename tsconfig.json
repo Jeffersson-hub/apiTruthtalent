@@ -12,7 +12,7 @@
     "jsx": "preserve",
     "baseUrl": "src",
     "paths": {
-      "@/lib/*": ["src/pages/api/lib/*"]
+      "@/lib/*": ["api/lib/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],

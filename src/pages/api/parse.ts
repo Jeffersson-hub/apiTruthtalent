@@ -1,6 +1,6 @@
 // src/pages/api/parse.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { extractCVData } from '@/lib/extractCVData';
+import { extractCVData } from '../../../api/lib/extractCVData';
 
 export const config = {
   api: {
