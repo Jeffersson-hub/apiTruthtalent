@@ -17,6 +17,8 @@ router.post('/', async (req, res) => {
 
     for (const fileUrl of files) {
       try {
+        const { fileUrl } = req.body;
+        if (!fileUrl) return res.status(400).json({ error: 'fileUrl manquant' });
         // 1. Télécharger le fichier depuis Supabase Storage
         const response = await axios.get(fileUrl, { responseType: 'arraybuffer' });
         const buffer = Buffer.from(response.data);
@@ -31,7 +33,7 @@ router.post('/', async (req, res) => {
         extractedData.file_url = fileUrl;
 
         // 5. Insérer dans Supabase
-        const { data, error } = await supabase
+        const { data: insertData, error } = await supabase
           .from('cvs')
           .insert([extractedData]);
 
@@ -46,7 +48,7 @@ router.post('/', async (req, res) => {
       }
     }
 
-    res.json({ success: true, results });
+    res.json({ success: true, results, data: insertData });
 
   } catch (err) {
     console.error('Erreur API analyse:', err);

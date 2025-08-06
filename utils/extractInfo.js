@@ -60,6 +60,7 @@ module.exports.extractInfo = (text) => {
     name,
     email,
     skills,
+    phone,
     raw_text: text,
     parsed_at: new Date().toISOString(),
   };

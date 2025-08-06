@@ -1,3 +1,4 @@
+const axios = require('axios');
 const pdf = require('pdf-parse');
 const mammoth = require('mammoth');
 const { parseOfficeAsync } = require('officeparser');
@@ -37,6 +38,23 @@ async function parseBuffer(buffer) {
 
   throw new Error('Format de fichier non supporté (PDF ou DOCX uniquement)');
 }
+
+async function parseFromUrl(fileUrl) {
+  const response = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+  const buffer = Buffer.from(response.data);
+
+  if (fileUrl.endsWith('.pdf')) {
+    const data = await pdfParse(buffer);
+    return data.text;
+  } else if (fileUrl.endsWith('.docx')) {
+    const result = await mammoth.extractRawText({ buffer });
+    return result.value;
+  } else {
+    throw new Error('Format de fichier non supporté');
+  }
+}
+
+module.exports = { parseFromUrl };
 
 module.exports = {
   parseBuffer,

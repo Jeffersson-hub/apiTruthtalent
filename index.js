@@ -1,8 +1,10 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
+const analyzeRoute = require('./routes/analyze');
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use('/analyze', analyzeRoute);
 
 // Test route
 app.get('/api/status', (req, res) => {
