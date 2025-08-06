@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const documentParser = require('../services/documentParser');
-const { extractInfo } = require('../utils/extractInfo');
+const { extractInfo } = require('../utils/extractCVData');
 const { supabase } = require('../utils/supabaseClient');
 
 router.post('/', async (req, res) => {
