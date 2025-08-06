@@ -6,7 +6,7 @@ import textract from "textract";
 /**
  * Analyse un fichier (PDF, DOCX, DOC) et retourne les données structurées
  */
-export async function extractCVData(filePath: string): Promise<any> {
+export async function extractCVData(buffer: Buffer<ArrayBuffer>, filePath: string): Promise<any> {
   const ext = filePath.split('.').pop()?.toLowerCase();
   let rawText = '';
 
