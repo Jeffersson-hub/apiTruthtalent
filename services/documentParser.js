@@ -20,4 +20,26 @@ async function parseDocument(buffer, mimetype) {
   }
 }
 
+async function parseBuffer(buffer) {
+  // Identifier le type de fichier
+  const isPdf = buffer.slice(0, 4).toString() === '%PDF';
+  const isDocx = buffer.slice(0, 2).toString('hex') === '504b'; // ZIP header
+
+  if (isPdf) {
+    const data = await pdfParse(buffer);
+    return data.text;
+  }
+
+  if (isDocx) {
+    const result = await mammoth.extractRawText({ buffer });
+    return result.value;
+  }
+
+  throw new Error('Format de fichier non supporté (PDF ou DOCX uniquement)');
+}
+
+module.exports = {
+  parseBuffer,
+};
+
 module.exports = { parseDocument };
