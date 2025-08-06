@@ -10,11 +10,13 @@
     "axios": "^1.11.0",
     "express": "^4.18.2",
     "formidable": "^3.5.4",
+    "fs": "^0.0.1-security",
     "mammoth": "^1.10.0",
     "next": "^15.4.5",
     "pdf-parse": "^1.1.1",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "textract": "^2.5.0"
   },
   "devDependencies": {
     "@types/node": "^24.2.0",
