@@ -1,7 +1,6 @@
-// /cv-api/pages/api/parse.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { supabase } from '../../api/lib/supabase';
 import { extractCVData } from '../../utils/extractCVData';
-import { supabase } from '../../lib/supabase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -9,25 +8,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { url } = req.body;
+    // 🔍 Liste des fichiers dans le dossier 'cvs'
+    const { data: files, error: listError } = await supabase.storage.from('truthtalent').list('cvs', {
+      limit: 100,
+    });
 
-    if (!url) {
-      return res.status(400).json({ error: 'URL manquante' });
+    if (listError || !files) {
+      console.error('Erreur listing fichiers:', listError);
+      return res.status(500).json({ error: 'Erreur lecture des fichiers' });
     }
 
-    // Extraction des données du CV
-    const data = await extractCVData(url);
+    const results = [];
 
-    // Sauvegarde dans Supabase table "candidats"
-    const { error } = await supabase.from('candidats').insert([{ file_url: url, ...data }]);
-    if (error) {
-      console.error('Erreur insertion en base:', error);
-      return res.status(500).json({ error: 'Erreur sauvegarde données' });
+    for (const file of files) {
+      const path = `cvs/${file.name}`;
+      const { data: urlData } = supabase.storage.from('truthtalent').getPublicUrl(path);
+      const publicUrl = urlData.publicUrl;
+
+      // Analyse du fichier
+      try {
+        const data = await extractCVData(publicUrl);
+
+        const { error: insertError } = await supabase.from('candidats').insert([{
+          fichier_cv_url: publicUrl,
+          ...data,
+        }]);
+
+        if (insertError) {
+          console.error(`Erreur insertion pour ${file.name}:`, insertError);
+          results.push({ file: file.name, status: 'failed', reason: insertError.message });
+        } else {
+          results.push({ file: file.name, status: 'ok', data });
+        }
+      } catch (e: any) {
+        console.error(`Erreur analyse pour ${file.name}:`, e);
+        results.push({ file: file.name, status: 'failed', reason: e.message });
+      }
     }
 
-    res.status(200).json(data);
-  } catch (error) {
-    console.error('Erreur analyse:', error);
-    res.status(500).json({ error: 'Erreur interne' });
+    return res.status(200).json({ results });
+  } catch (error: any) {
+    console.error('Erreur générale:', error);
+    res.status(500).json({ error: 'Erreur générale lors de l’analyse' });
   }
 }

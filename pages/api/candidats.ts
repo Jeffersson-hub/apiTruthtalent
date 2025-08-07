@@ -1,3 +1,5 @@
+// /pages/api/candidats.ts
+
 import { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "../../utils/supabaseClient";
 
