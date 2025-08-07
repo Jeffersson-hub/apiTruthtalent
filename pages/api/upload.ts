@@ -1,37 +1,69 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const form = document.getElementById("cv-upload-form");
-  const fileInput = document.getElementById("cv-files");
-  const message = document.getElementById("after-upload");
+// /cv-api/pages/api/upload.ts
 
-  if (!form || !fileInput) return;
+import { NextApiRequest, NextApiResponse } from 'next';
+import { supabase } from '../../lib/supabase';
+import formidable from 'formidable';
+import fs from 'fs';
 
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    message.textContent = "Téléversement en cours...";
-    message.style.display = "block";
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
-    const files = fileInput.files;
-    const formData = new FormData();
+// Autoriser WordPress (CORS)
+function setCorsHeaders(res: NextApiResponse) {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // ou spécifie ton domaine pour + de sécurité
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
 
-    for (let i = 0; i < files.length; i++) {
-      formData.append("cv-files[]", files[i]);
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  setCorsHeaders(res);
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Méthode non autorisée' });
+  }
+
+  const form = formidable();
+
+  form.parse(req, async (err, fields, files) => {
+    if (err || !files['cv-files[]']) {
+      return res.status(400).json({ error: 'Erreur lors de la lecture des fichiers' });
     }
 
-    try {
-      const response = await fetch("https://apitruthtalent.vercel.app/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+    const fileList = Array.isArray(files['cv-files[]']) ? files['cv-files[]'] : [files['cv-files[]']];
 
-      if (response.ok) {
-        message.textContent = "✅ Téléversement terminé avec succès.";
-      } else {
-        message.textContent = "❌ Erreur pendant l'envoi (réponse invalide).";
-        console.error("Erreur serveur:", await response.text());
+    const uploads = [];
+
+    for (const file of fileList) {
+      try {
+        const fileBuffer = fs.readFileSync(file.filepath);
+        const mimetype = file.mimetype || 'application/octet-stream';
+
+        const uploadPath = `cvs/${file.originalFilename}`;
+
+        const { error } = await supabase.storage
+          .from('cv') // ⚠️ Le nom de ton bucket Supabase
+          .upload(uploadPath, fileBuffer, {
+            contentType: mimetype,
+            upsert: false,
+          });
+
+        if (error) {
+          uploads.push({ file: file.originalFilename, success: false, error: error.message });
+        } else {
+          uploads.push({ file: file.originalFilename, success: true });
+        }
+      } catch (err) {
+        uploads.push({ file: file.originalFilename, success: false, error: String(err) });
       }
-    } catch (err) {
-      message.textContent = "❌ Échec de la connexion à l’API.";
-      console.error("Erreur fetch:", err);
     }
+
+    res.status(200).json({ uploads });
   });
-});
+}
