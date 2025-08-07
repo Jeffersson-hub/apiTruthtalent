@@ -11,18 +11,15 @@ export const config = {
   },
 };
 
-// Autoriser WordPress (CORS)
-function setCorsHeaders(res: NextApiResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*'); // ou spécifie ton domaine pour + de sécurité
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  setCorsHeaders(res);
+  res.setHeader("Access-Control-Allow-Origin", "*"); // ou "https://truthtalent.online" si tu veux limiter
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
+    return;
   }
 
   if (req.method !== 'POST') {
