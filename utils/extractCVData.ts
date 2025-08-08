@@ -1,34 +1,60 @@
+// utils/extractCVData.ts
+import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
-import pdfParse from 'pdf-parse';
-import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export interface CVData {
+  nom?: string;
+  prenom?: string;
+  email?: string;
+  telephone?: string;
+  competences?: string[];
+  experiences?: string[];
+  texte_brut?: string;
+}
 
-export async function extractCVData(fileUrl: string) {
-  const { data, error } = await supabase.storage.from('ton-bucket').download(fileUrl);
-  if (error || !data) throw new Error('Fichier introuvable');
-
-  const buffer = await data.arrayBuffer();
-  const uint8 = new Uint8Array(buffer);
-
+export async function extractCVData(fileBuffer: Buffer): Promise<CVData> {
   let text = '';
 
-  if (fileUrl.endsWith('.pdf')) {
-    const result = await pdfParse(uint8);
-    text = result.text;
-  } else if (fileUrl.endsWith('.docx')) {
-    const bufferNode = Buffer.from(uint8); // ✅ FIX ICI
-    const result = await mammoth.extractRawText({ buffer: bufferNode });
-    text = result.value;
+  // Détection du type de fichier
+  const isPDF = fileBuffer.slice(0, 4).toString() === '%PDF';
+  const isDOCX = fileBuffer.slice(0, 2).toString('hex') === '504b'; // DOCX = zip
+
+  if (isPDF) {
+    const pdfData = await pdf(fileBuffer);
+    text = pdfData.text;
+  } else if (isDOCX) {
+    const { value } = await mammoth.extractRawText({ buffer: fileBuffer });
+    text = value;
   } else {
-    throw new Error('Format non supporté');
+    throw new Error('Format de fichier non supporté');
   }
 
-  const email = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/)?.[0] || '';
-  const phone = text.match(/(?:(?:\+|00)33|0)[1-9](?:[\s.-]*\d{2}){4}/)?.[0] || '';
+  // Extraction basique des infos
+  const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/);
+  const phoneMatch = text.match(/(\+?\d[\d .-]{7,}\d)/);
+  
+  const lignes = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
-  return { email, phone, rawText: text };
+  const nomComplet = lignes[0] || '';
+  const [prenom, ...nomParts] = nomComplet.split(' ');
+  const nom = nomParts.join(' ');
+
+  // Recherche compétences (ex: mots clés)
+  const skillsKeywords = ['JavaScript', 'Node.js', 'React', 'PHP', 'Python', 'SQL', 'WordPress', 'AWS'];
+  const competencesTrouvees = skillsKeywords.filter(skill =>
+    new RegExp(`\\b${skill}\\b`, 'i').test(text)
+  );
+
+  // Recherche expériences
+  const experiencesTrouvees = lignes.filter(l => /20\d{2}/.test(l));
+
+  return {
+    nom,
+    prenom,
+    email: emailMatch ? emailMatch[0] : undefined,
+    telephone: phoneMatch ? phoneMatch[0] : undefined,
+    competences: competencesTrouvees,
+    experiences: experiencesTrouvees.slice(0, 5),
+    texte_brut: text,
+  };
 }

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../api/lib/supabase';
+import { supabase } from '../../utils/supabase';
 import { extractCVData } from '../../utils/extractCVData';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -8,47 +8,64 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 🔍 Liste des fichiers dans le dossier 'cvs'
-    const { data: files, error: listError } = await supabase.storage.from('truthtalent').list('cvs', {
-      limit: 100,
-    });
+    // 1️⃣ Liste des fichiers dans le dossier 'cvs'
+    const { data: files, error: listError } = await supabase.storage
+      .from('truthtalent')
+      .list('cvs', { limit: 100 });
 
-    if (listError || !files) {
+    if (listError || !files?.length) {
       console.error('Erreur listing fichiers:', listError);
       return res.status(500).json({ error: 'Erreur lecture des fichiers' });
     }
 
-    const results = [];
-
-    for (const file of files) {
+    // 2️⃣ Traitement en parallèle
+    const results = await Promise.all(files.map(async (file) => {
       const path = `cvs/${file.name}`;
-      const { data: urlData } = supabase.storage.from('truthtalent').getPublicUrl(path);
-      const publicUrl = urlData.publicUrl;
 
-      // Analyse du fichier
       try {
-        const data = await extractCVData(publicUrl);
+        // Télécharger le fichier binaire
+        const { data: fileBuffer, error: downloadError } = await supabase.storage
+          .from('truthtalent')
+          .download(path);
 
-        const { error: insertError } = await supabase.from('candidats').insert([{
-          fichier_cv_url: publicUrl,
-          ...data,
-        }]);
-
-        if (insertError) {
-          console.error(`Erreur insertion pour ${file.name}:`, insertError);
-          results.push({ file: file.name, status: 'failed', reason: insertError.message });
-        } else {
-          results.push({ file: file.name, status: 'ok', data });
+        if (downloadError || !fileBuffer) {
+          throw new Error(downloadError?.message || 'Erreur téléchargement');
         }
-      } catch (e: any) {
-        console.error(`Erreur analyse pour ${file.name}:`, e);
-        results.push({ file: file.name, status: 'failed', reason: e.message });
-      }
-    }
 
-    return res.status(200).json({ results });
+        const arrayBuffer = await fileBuffer.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // Extraction
+        const extractedData = await extractCVData(buffer);
+
+        // Upsert dans la table
+        const { error: upsertError } = await supabase
+          .from('candidats')
+          .upsert(
+            {
+              fichier_cv_url: path,
+              ...extractedData,
+            },
+            { onConflict: 'email' } // évite doublons si même email
+          );
+
+        if (upsertError) {
+          throw new Error(upsertError.message);
+        }
+
+        return { file: file.name, status: 'ok', data: extractedData };
+      } catch (err: any) {
+        console.error(`Erreur analyse pour ${file.name}:`, err);
+        return { file: file.name, status: 'failed', reason: err.message };
+      }
+    }));
+
+    return res.status(200).json({
+  total: results.length,
+  candidats: results.filter(r => r.status === 'ok').map(r => r.data)
   } catch (error: any) {
     console.error('Erreur générale:', error);
     res.status(500).json({ error: 'Erreur générale lors de l’analyse' });
   }
+}
 }

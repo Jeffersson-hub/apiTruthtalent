@@ -2,6 +2,11 @@
   "dependencies": {
     "formidable": "^3.5.4",
     "fs": "^0.0.1-security",
-    "next": "^15.4.6"
+    "mammoth": "^1.10.0",
+    "multer": "^2.0.2",
+    "next": "^15.4.6",
+    "next-connect": "^1.0.0",
+    "pdf-parse": "^1.1.1",
+    "supabase": "^2.33.9"
   }
 }
