@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import nextConnect from 'next-connect';
 import multer from 'multer';
 import Cors from 'cors';
-import { supabase } from '../../../old/supabase';
+// import { supabase } from '../../../old/supabase';
 
 // Middleware CORS
 const cors = Cors({
@@ -44,12 +44,12 @@ apiRoute.post(async (req: NextApiRequest & { file?: Express.Multer.File }, res) 
   }
 
   const filePath = `cvs/${Date.now()}_${req.file.originalname}`;
-  const { error } = await supabase.storage
+  /* const { error } = await supabase.storage
     .from('truthtalent')
     .upload(filePath, req.file.buffer, {
       contentType: req.file.mimetype,
       upsert: false,
-    });
+    }); */
 
   if (error) {
     return res.status(500).json({ error: 'Erreur lors de l\'upload vers Supabase', details: error.message });
