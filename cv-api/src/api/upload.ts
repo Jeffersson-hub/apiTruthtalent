@@ -49,11 +49,11 @@ apiRoute.post(async (req: NextApiRequest & { file?: Express.Multer.File }, res) 
     .upload(filePath, req.file.buffer, {
       contentType: req.file.mimetype,
       upsert: false,
-    }); */
+    });
 
   if (error) {
     return res.status(500).json({ error: 'Erreur lors de l\'upload vers Supabase', details: error.message });
-  }
+  } */
 
   res.status(200).json({ success: true, path: filePath });
 });
