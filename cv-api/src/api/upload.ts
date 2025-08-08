@@ -1,7 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-// import * as nextConnect from 'next-connect';
 import nextConnect from 'next-connect';
-
 import multer from 'multer';
 import Cors from 'cors';
 import { supabase } from '../../../utils/supabase';
@@ -15,7 +13,7 @@ const cors = Cors({
 // Helper function to run middleware
 function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
   return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
+    fn(req, res, (result: unknown) => {
       if (result instanceof Error) {
         return reject(result);
       }
@@ -28,10 +26,10 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) 
 const upload = multer({ storage: multer.memoryStorage() });
 
 const apiRoute = nextConnect<NextApiRequest, NextApiResponse>({
-  onError(error: { message: any; }, req: any, res: { status: (arg0: number) => { (): any; new(): any; json: { (arg0: { error: string; }): void; new(): any; }; }; }) {
+  onError(error: Error, req: NextApiRequest, res: NextApiResponse) {
     res.status(501).json({ error: `Erreur : ${error.message}` });
   },
-  onNoMatch(req: { method: any; }, res: { status: (arg0: number) => { (): any; new(): any; json: { (arg0: { error: string; }): void; new(): any; }; }; }) {
+  onNoMatch(req: NextApiRequest, res: NextApiResponse) {
     res.status(405).json({ error: `Méthode ${req.method} non autorisée` });
   },
 });
