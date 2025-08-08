@@ -12,7 +12,9 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.54.0",
@@ -37,5 +39,12 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-  "include": ["pages/**/*", "utils/**/*", "lib/**/*"]
+  "engines": {
+  "node": "^20.19.0"
+  },
+  "include": [
+    "pages/**/*",
+    "utils/**/*",
+    "lib/**/*"
+  ]
 }
