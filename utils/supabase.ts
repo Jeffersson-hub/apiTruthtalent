@@ -1,5 +1,5 @@
-// /cv-api/utils/supabase.ts
-import { createClient } from '@supabase/supabase-js'
+// utils/supabase.ts
+import { createClient } from '@supabase/supabase'
 
 const supabaseUrl = 'https://venldvzkjzybpffrtkql.supabase.co'
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '' // dans .env.local
