@@ -3,7 +3,7 @@ const router = express.Router();
 const axios = require('axios');
 const documentParser = require('../services/documentParser');
 const { extractInfo } = require('../utils/extractCVData');
-const { supabase } = require('../utils/supabaseClient');
+const { supabase } = require('../old/supabaseClient');
 
 router.post('/', async (req, res) => {
   try {
