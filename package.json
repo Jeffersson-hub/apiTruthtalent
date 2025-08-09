@@ -1,4 +1,8 @@
 {
+  "compilerOptions": {
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "types": ["node"]
+  },
   "name": "apitruthtalent",
   "version": "1.0.0",
   "private": true,
@@ -21,6 +25,7 @@
     "@types/cors": "^2.8.19",
     "@types/node": "^24.2.0",
     "@types/pdf-parse": "^1.1.5",
+    "@types/phoenix": "^1.6.6",
     "@types/react": "19.1.9",
     "typescript": "5.9.2"
   }

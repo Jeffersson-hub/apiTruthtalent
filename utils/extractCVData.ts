@@ -2,24 +2,47 @@
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 
-export interface CVData {
-  nom?: string | null;
-  prenom?: string | null;
-  email?: string | null;
-  telephone?: string | null;
+export type Candidat = {
+  nom: string | null;
+  prenom: string | null;
+  email: string | null;
+  telephone: string | null;
   adresse?: string | null;
   linkedin?: string | null;
   github?: string | null;
   autres_liens?: string[] | null;
-  competences?: string[] | null;       // correspond à ARRAY text
-  experiences?: any[] | null;          // jsonb - on renvoie tableau d'objets simples
-  formations?: any[] | null;           // jsonb
-  langues?: string[] | null;           // ARRAY text
-  certifications?: string[] | null;    // ARRAY text
+  competences: string[];
+  experiences?: string[] | null;
+  formations?: string[] | null;
+  langues?: string[] | null;
+  certifications?: string[] | null;
   resume?: string | null;
   objectif?: string | null;
   fichier_cv_url?: string | null;
+  date_analyse?: string;
+};
+
+interface candidat {
+  nom: string | null;
+  prenom: string | null;
+  email: string | null;
+  telephone: string | null;
+  adresse: string | null;
+  linkedin: string | null;
+  github: string | null;
+  autres_liens: string | null;
+  competences: string[] | null;
+  experiences: any | null;
+  formations: any | null;
+  langues: any | null;
+  certifications: any | null;
+  resume: string | null;
+  objectif: string | null;
+  fichier_cv_url: string | null;
+  date_analyse?: string;
+  cv_text?: string;
 }
+
 
 function normalizePhone(raw: string | null): string | null {
   if (!raw) return null;
@@ -141,6 +164,22 @@ export async function extractCVData(fileBuffer: Buffer): Promise<CVData> {
 
   const objectifMatch = text.match(/(objectif|objectif professionnel|career objective)[\s\S]{0,200}/i);
   const objectif = objectifMatch ? objectifMatch[0].slice(0, 500) : null;
+
+  export type CVData = {
+  nom: string | null;
+  prenom: string | null;
+  email: string | null;
+  telephone: string | null;
+  adresse?: string | null;
+  linkedin?: string | null;
+  github?: string | null;
+  autres_liens?: string[] | null;
+  competences: string[];
+  langues?: string[] | null;
+  certifications?: string[] | null;
+  resume?: string | null;
+  objectif?: string | null;
+};
 
   // 10) Retourner l'objet au format table candidats
   const result: CVData = {
