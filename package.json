@@ -1,4 +1,12 @@
 {
+  "name": "apitruthtalent",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.54.0",
     "cors": "^2.8.5",
@@ -11,12 +19,8 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
-    "@types/node": "^24.2.0"
-  },
-  "scripts": {
-    "clean": "rm -rf node_modules && rm -rf .next",
-    "build": "next build",
-    "dev": "next dev",
-    "start": "next start"
+    "@types/node": "^24.2.0",
+    "@types/react": "19.1.9",
+    "typescript": "5.9.2"
   }
 }
