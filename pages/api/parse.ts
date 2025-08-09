@@ -136,8 +136,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const results = await Promise.all(resultsPromise);
 
+    type ParseResult = {
+      file: string;
+      status: 'ok' | 'failed';
+      data?: {
+        email?: string;
+        [key: string]: any;
+      };
+      reason?: string;
+    };
+
+
     // 3) Après l'upsert, on peut récupérer en base les candidats analysés (avec email présent)
-    const emails = results.filter((r: { status: string; data: { email: any; }; }) => r.status === 'ok' && r.data?.email).map((r: { data: { email: any; }; }) => r.data.email);
+    const emails = results
+    //.filter((r: { status: string; data: { email: any; }; }) => r.status === 'ok' && r.data?.email)
+    //.map((r: { data: { email: any; }; }) => r.data.email);
+    .filter((r: ParseResult) => r.status === 'ok' && r.data?.email)
+    .map((r: ParseResult) => r.data!.email);
+
     let candidatsFromDb: any[] = [];
     if (emails.length) {
       const { data: dbRows, error: fetchError } = await supabase
