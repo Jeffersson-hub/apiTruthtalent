@@ -8,6 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { q, skill, min_score, status } = req.query;
+
   try {
     let query = supabase.from('candidats').select('*');
 
@@ -18,7 +19,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (q) query = query.ilike('nom', `%${q}%`).or(`prenom.ilike.%${q}%`);
 
     const { data, error } = await query.order('date_analyse', { ascending: false });
+
     if (error) throw error;
+    
     return res.status(200).json(data || []);
   } catch (err: any) {
     console.error(err);

@@ -2,27 +2,7 @@
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 
-export type Candidat = {
-  nom: string | null;
-  prenom: string | null;
-  email: string | null;
-  telephone: string | null;
-  adresse?: string | null;
-  linkedin?: string | null;
-  github?: string | null;
-  autres_liens?: string[] | null;
-  competences: string[];
-  experiences?: string[] | null;
-  formations?: string[] | null;
-  langues?: string[] | null;
-  certifications?: string[] | null;
-  resume?: string | null;
-  objectif?: string | null;
-  fichier_cv_url?: string | null;
-  date_analyse?: string;
-};
-
-interface candidat {
+export interface candidat {
   nom: string | null;
   prenom: string | null;
   email: string | null;
@@ -55,7 +35,7 @@ function firstMatch(regex: RegExp, text: string) {
   return m ? m[0] : null;
 }
 
-export async function extractCVData(fileBuffer: Buffer): Promise<Candidate> {
+export async function extractCVData(fileBuffer: Buffer): Promise<candidat> {
   // 1) Extraire texte en fonction du type
   let text = '';
   const header = fileBuffer.slice(0, 4).toString();
@@ -166,7 +146,7 @@ export async function extractCVData(fileBuffer: Buffer): Promise<Candidate> {
   const objectif = objectifMatch ? objectifMatch[0].slice(0, 500) : null;
 
   // 10) Retourner l'objet au format table candidats
-  const result: Candidate = {
+  const result: candidat = {
     nom,
     prenom,
     email: email || null,
@@ -188,25 +168,4 @@ export async function extractCVData(fileBuffer: Buffer): Promise<Candidate> {
   };
 
   return result;
-};
-
-  interface Candidate {
-  nom: string | null;
-  prenom: string | null;
-  email: string | null;
-  telephone: string | null;
-  adresse: string | null;
-  linkedin: string | null;
-  github: string | null;
-  autres_liens: string | null;
-  competences: string[] | null;
-  experiences: any | null;
-  formations: any | null;
-  langues: any | null;
-  certifications: any | null;
-  resume: string | null;
-  objectif: string | null;
-  fichier_cv_url: string | null;
-  date_analyse?: string;
-  cv_text?: string;
 };

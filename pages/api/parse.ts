@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../utils/supabase';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
-import { Candidat } from '../../utils/extractCVData';
+import { candidat } from '../../utils/extractCVData';
 import Cors from 'cors';
 
 type ParseResult = {
@@ -78,7 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const arrayBuffer = await fileStream.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        const extracted: Candidat = {
+        const extracted: candidat = {
           nom: null,
           prenom: null,
           email: null,
