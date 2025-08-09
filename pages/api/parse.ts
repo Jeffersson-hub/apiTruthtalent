@@ -5,6 +5,7 @@ import { supabase } from '../../utils/supabase'; // ton client supabase
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 import { Candidat } from '../../utils/extractCVData';
+import Cors from 'cors';
 
 type ParseResult = {
   file: string;
@@ -175,4 +176,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Erreur générale parse:', error);
     return res.status(500).json({ error: error?.message || 'Erreur serveur' });
   }
+}
+
+// Initialiser le middleware CORS
+const cors = Cors({
+  methods: ['GET', 'POST', 'OPTIONS'],
+  origin: 'https://truthtalent.online', // Remplacez par l'origine de votre site
+});
+
+// Helper method to wait for a middleware to execute before continuing
+function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result: any) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
 }
