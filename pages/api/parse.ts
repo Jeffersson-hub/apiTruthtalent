@@ -4,6 +4,7 @@ import { supabase } from '../../utils/supabase'; // ton client supabase
 // import { extractCVData } from '../../utils/extractCVData';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
+import { Candidat } from '../../utils/extractCVData';
 
 type ParseResult = {
   file: string;
@@ -72,7 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         //extracted.fichier_cv_url = path;
 
 
-        const extracted: candidatRow = {
+        const extracted: Candidat = {
           nom: null,
           prenom: null,
           email: null,

@@ -165,22 +165,6 @@ export async function extractCVData(fileBuffer: Buffer): Promise<CVData> {
   const objectifMatch = text.match(/(objectif|objectif professionnel|career objective)[\s\S]{0,200}/i);
   const objectif = objectifMatch ? objectifMatch[0].slice(0, 500) : null;
 
-  export type CVData = {
-  nom: string | null;
-  prenom: string | null;
-  email: string | null;
-  telephone: string | null;
-  adresse?: string | null;
-  linkedin?: string | null;
-  github?: string | null;
-  autres_liens?: string[] | null;
-  competences: string[];
-  langues?: string[] | null;
-  certifications?: string[] | null;
-  resume?: string | null;
-  objectif?: string | null;
-};
-
   // 10) Retourner l'objet au format table candidats
   const result: CVData = {
     nom,
@@ -203,3 +187,19 @@ export async function extractCVData(fileBuffer: Buffer): Promise<CVData> {
 
   return result;
 }
+
+  export type CVData = {
+  nom: string | null;
+  prenom: string | null;
+  email: string | null;
+  telephone: string | null;
+  adresse?: string | null;
+  linkedin?: string | null;
+  github?: string | null;
+  autres_liens?: string[] | null;
+  competences: string[];
+  langues?: string[] | null;
+  certifications?: string[] | null;
+  resume?: string | null;
+  objectif?: string | null;
+};

@@ -13,11 +13,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (error) return res.status(500).json({ error: error.message });
 
     // renvoyer filename + path + updated_at si dispo
-    const files = (data || []).map((f: { name: any; updated_at: any; size: any; }) => ({
-      name: f.name,
-      path: `${FOLDER}/${f.name}`,
-      updated_at: f.updated_at || null,
-      size: f.size || null
+    const files = (data || []).map((files: { name: any; updated_at: any; size: any; }) => ({
+      name: files.name,
+      path: `${FOLDER}/${files.name}`,
+      updated_at: files.updated_at || null,
+      size: files.size || null
     }));
 
     return res.status(200).json({ total: files.length, files });

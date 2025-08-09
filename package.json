@@ -1,7 +1,12 @@
 {
   "compilerOptions": {
-    "typeRoots": ["./types", "./node_modules/@types"],
-    "types": ["node"]
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ],
+    "types": [
+      "node"
+    ]
   },
   "name": "apitruthtalent",
   "version": "1.0.0",
@@ -27,6 +32,7 @@
     "@types/pdf-parse": "^1.1.5",
     "@types/phoenix": "^1.6.6",
     "@types/react": "19.1.9",
+    "eslint": "^9.33.0",
     "typescript": "5.9.2"
   }
 }
