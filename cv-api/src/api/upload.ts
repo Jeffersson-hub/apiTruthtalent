@@ -2,8 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import nextConnect from 'next-connect';
 import multer from 'multer';
 import Cors from 'cors';
-// import { supabase } from '../../../old/supabase';
-
+import { supabase } from '../../../utils/supabase';
 // Middleware CORS
 const cors = Cors({
   origin: 'https://truthtalent.online',
