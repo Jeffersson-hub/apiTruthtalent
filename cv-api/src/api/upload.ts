@@ -44,7 +44,7 @@ apiRoute.post(async (req: NextApiRequest & { file?: Express.Multer.File }, res) 
   }
 
   const filePath = `cvs/${Date.now()}_${req.file.originalname}`;
-  /* const { error } = await supabase.storage
+  const { error } = await supabase.storage
     .from('truthtalent')
     .upload(filePath, req.file.buffer, {
       contentType: req.file.mimetype,
@@ -53,7 +53,7 @@ apiRoute.post(async (req: NextApiRequest & { file?: Express.Multer.File }, res) 
 
   if (error) {
     return res.status(500).json({ error: 'Erreur lors de l\'upload vers Supabase', details: error.message });
-  } */
+  }
 
   res.status(200).json({ success: true, path: filePath });
 });
