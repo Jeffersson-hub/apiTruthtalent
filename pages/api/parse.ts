@@ -67,11 +67,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const buffer = Buffer.from(arrayBuffer);
 
         // Extraire données
-        //const extracted = await extractCVData(buffer);
+        // const extracted = await extractCVData(buffer);
 
         // Attacher chemin/URL du fichier (on stocke le path relatif pour plus de sécurité)
-        //extracted.fichier_cv_url = path;
-
 
         const extracted: Candidat = {
           nom: null,
@@ -82,7 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           linkedin: null,
           github: null,
           autres_liens: null,
-          competences: null,
+          //competences: null,
           experiences: null,
           formations: null,
           langues: null,
@@ -91,9 +89,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           objectif: null,
           fichier_cv_url: null,
           date_analyse: new Date().toISOString(),
-          cv_text: ''
+          competences: []
         };
 
+        extracted.fichier_cv_url = path;
 
 
         // Préparer données pour upsert en respectant le schéma (nom/prenom/email...)

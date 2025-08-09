@@ -55,7 +55,7 @@ function firstMatch(regex: RegExp, text: string) {
   return m ? m[0] : null;
 }
 
-export async function extractCVData(fileBuffer: Buffer): Promise<CVData> {
+export async function extractCVData(fileBuffer: Buffer): Promise<Candidate> {
   // 1) Extraire texte en fonction du type
   let text = '';
   const header = fileBuffer.slice(0, 4).toString();
@@ -166,7 +166,7 @@ export async function extractCVData(fileBuffer: Buffer): Promise<CVData> {
   const objectif = objectifMatch ? objectifMatch[0].slice(0, 500) : null;
 
   // 10) Retourner l'objet au format table candidats
-  const result: CVData = {
+  const result: Candidate = {
     nom,
     prenom,
     email: email || null,
@@ -174,32 +174,39 @@ export async function extractCVData(fileBuffer: Buffer): Promise<CVData> {
     adresse: null,
     linkedin: linkedin || null,
     github: github || null,
-    autres_liens,
+    //autres_liens,
     competences,
     experiences: experiences.length ? experiences : null,
+    //experiences,
     formations: formations.length ? formations : null,
     langues,
     certifications,
     resume,
     objectif,
-    fichier_cv_url: null, // rempli par l'API parse (chemin / url)
+    fichier_cv_url: null,
+    autres_liens: null
   };
 
   return result;
-}
+};
 
-  export type CVData = {
+  interface Candidate {
   nom: string | null;
   prenom: string | null;
   email: string | null;
   telephone: string | null;
-  adresse?: string | null;
-  linkedin?: string | null;
-  github?: string | null;
-  autres_liens?: string[] | null;
-  competences: string[];
-  langues?: string[] | null;
-  certifications?: string[] | null;
-  resume?: string | null;
-  objectif?: string | null;
+  adresse: string | null;
+  linkedin: string | null;
+  github: string | null;
+  autres_liens: string | null;
+  competences: string[] | null;
+  experiences: any | null;
+  formations: any | null;
+  langues: any | null;
+  certifications: any | null;
+  resume: string | null;
+  objectif: string | null;
+  fichier_cv_url: string | null;
+  date_analyse?: string;
+  cv_text?: string;
 };
