@@ -1,6 +1,8 @@
 // pages/api/list-cv.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../utils/supabase';
+import type { FileObject } from '@supabase/storage-js'; // si tu utilises ce package
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
@@ -13,12 +15,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (error) return res.status(500).json({ error: error.message });
 
     // renvoyer filename + path + updated_at si dispo
-    const files = (data || []).map((files: { name: any; updated_at: any; size: any; }) => ({
-      name: files.name,
-      path: `${FOLDER}/${files.name}`,
-      updated_at: files.updated_at || null,
-      size: files.size || null
+    const files = (data || []).map((file: { name: any; updated_at?: any; size?: any }) => ({
+    name: file.name,
+    path: `${FOLDER}/${file.name}`,
+    updated_at: file.updated_at || null,
+    size: file.size || 0,  // fallback si size est absent
     }));
+
 
     return res.status(200).json({ total: files.length, files });
   } catch (err: any) {
