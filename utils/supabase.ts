@@ -1,13 +1,10 @@
-// utils/supabase.ts
-
-// import { createClient } from '@supabase/supabase-js';
-import { createClient } from '../node_modules/@supabase/supabase-js';
-import { extractCVData } from './extractCVData';
+import { createClient } from '@supabase/supabase-js';
+import { extractCVData, candidat } from './extractCVData';
 
 const supabaseUrl = process.env.SUPABASE_URL || 'https://venldvzkjzybpffrtkql.supabase.co';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlbmxkdnpranp5YnBmZnJ0a3FsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM5NzE1MDUsImV4cCI6MjA2OTU0NzUwNX0.-sfbWvmpnU0Ivn0AQ8cRy-hzGZDPFImTxo8XH0jArxs';
-
 export const supabase = createClient(supabaseUrl, supabaseKey);
+
 async function processFilesFromBucket() {
   const BUCKET = 'truthtalent';
   const FOLDER = 'cvs';
@@ -44,7 +41,7 @@ async function processFilesFromBucket() {
     // Extraire les données du fichier
     const extractedData = await extractCVData(buffer);
 
-    // Insérer les données dans la base de données, table candidata
+    // Insérer les données dans la table "candidats"
     const { error: insertError } = await supabase
       .from('candidats')
       .insert([{
@@ -57,43 +54,36 @@ async function processFilesFromBucket() {
         formations: extractedData.formations,
         langues: extractedData.langues,
         linkedin: extractedData.linkedin,
-        // Ajoutez d'autres champs selon votre schéma
-      }])
-      .select();
+      }]);
 
     if (insertError) {
       console.error(`Erreur lors de l'insertion des données pour le fichier ${file.name}:`, insertError);
-      } else {
+    } else {
       console.log(`Données insérées avec succès pour le fichier ${file.name}.`);
-      }
     }
 
     // Insérer les données dans la table "jobs"
-    // if (extractCVData.experiences && extractCVData.experiences.length > 0) {
-      const { error: insertError } = await supabase
-      .from('jobs')
-      .insert([{
-        name: extractCVData.name,
-        domain: extractCVData.domain,
-        user_id: extractCVData.user_id,
-      }])
-        // Ajoutez d'autres champs selon votre schéma
-      .select();
+    if (extractedData.experiences && extractedData.experiences.length > 0) {
+      const jobsInserts = extractedData.experiences.map(experience => ({
+        name: experience.poste, // Assurez-vous que le champ est correct
+        domain: "Default Domain", // Remplacez par une valeur appropriée
+        user_id: "Default User ID", // Remplacez par une valeur appropriée
+      }));
 
       const { error: jobsInsertError } = await supabase
         .from('jobs')
+        .insert(jobsInserts);
 
       if (jobsInsertError) {
-        console.error(`Erreur lors de l'insertion des expériences pour le fichier ${files.name}:`, jobsInsertError);
+        console.error(`Erreur lors de l'insertion des expériences pour le fichier ${file.name}:`, jobsInsertError);
       }
-    
+    }
 
     // Insérer les données dans la table "skills"
-    if (extractCVData.competences && extractCVData.competences.length > 0) {
-      const skillsInserts = extractCVData.competences.map((competence: any) => ({
-        candidat_id: candidatId,
+    if (extractedData.competences && extractedData.competences.length > 0) {
+      const skillsInserts = extractedData.competences.map(competence => ({
+        candidat_id: "Default Candidate ID", // Remplacez par une valeur appropriée
         nom: competence,
-        // Ajoutez d'autres champs selon votre schéma
       }));
 
       const { error: skillsInsertError } = await supabase
@@ -101,10 +91,9 @@ async function processFilesFromBucket() {
         .insert(skillsInserts);
 
       if (skillsInsertError) {
-        console.error(`Erreur lors de l'insertion des compétences pour le fichier ${files.name}:`, skillsInsertError);
+        console.error(`Erreur lors de l'insertion des compétences pour le fichier ${file.name}:`, skillsInsertError);
       }
-
-
+    }
   }
 }
 

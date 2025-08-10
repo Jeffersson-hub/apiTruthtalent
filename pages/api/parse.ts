@@ -27,15 +27,30 @@ async function extractCVData(buffer: Buffer): Promise<candidat> {
   const telMatch = text.match(/(\+?\d[\d\s\-\(\)]{6,}\d)/);
   const nomMatch = text.match(/nom\s*:?\s*(\S.+)/i);
   const competences = Array.from(new Set((text.match(/(skills|competences|compétences)\s*[:\-\n]*([\s\S]{0,200})/i)?.[2]?.split(/[,;\n•·\-]/).map(s => s.trim()).filter(Boolean) || [])));
+  const domainMatch = text.match(/domain\s*:?\s*(\S.+)/i);
 
   return {
+    user_id: null, // Assurez-vous de définir une valeur appropriée
+    domain: null, // Assurez-vous de définir une valeur appropriée
+    metier: null, // Assurez-vous de définir une valeur appropriée
     nom: nomMatch?.[1]?.trim() ?? null,
-    prenom: null,
+    prenom: null, // Assurez-vous de définir une valeur appropriée
     email: emailMatch?.[0] ?? null,
     telephone: telMatch?.[0] ?? null,
-    competences,
-    experiences: [],
-    cv_text: text
+    adresse: null, // Assurez-vous de définir une valeur appropriée
+    linkedin: null, // Assurez-vous de définir une valeur appropriée
+    github: null, // Assurez-vous de définir une valeur appropriée
+    autres_liens: null, // Assurez-vous de définir une valeur appropriée
+    competences: competences.length > 0 ? competences : null,
+    experiences: [], // Assurez-vous de définir une valeur appropriée
+    formations: null, // Assurez-vous de définir une valeur appropriée
+    langues: null, // Assurez-vous de définir une valeur appropriée
+    certifications: null, // Assurez-vous de définir une valeur appropriée
+    resume: null, // Assurez-vous de définir une valeur appropriée
+    objectif: null, // Assurez-vous de définir une valeur appropriée
+    fichier_cv_url: null, // Assurez-vous de définir une valeur appropriée
+    date_analyse: new Date().toISOString() // Assurez-vous de définir une valeur appropriée
+    // cv_text: text || null
   };
 }
 
