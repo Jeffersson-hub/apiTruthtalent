@@ -3,6 +3,9 @@ import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 
 export interface candidat {
+  user_id: any;
+  domain: any;
+  metier: any;
   nom: string | null;
   prenom: string | null;
   email: string | null;
@@ -12,7 +15,11 @@ export interface candidat {
   github: string | null;
   autres_liens: string | null;
   competences: string[] | null;
-  experiences: any | null;
+  experiences: Array<{
+    poste: string | null;
+    entreprise: string | null;
+    // Ajoutez d'autres champs selon votre schéma
+  }> | null;
   formations: any | null;
   langues: any | null;
   certifications: any | null;
@@ -164,7 +171,10 @@ export async function extractCVData(fileBuffer: Buffer): Promise<candidat> {
     resume,
     objectif,
     fichier_cv_url: null,
-    autres_liens: null
+    autres_liens: null,
+    user_id: undefined,
+    domain: undefined,
+    metier: undefined
   };
 
   return result;
