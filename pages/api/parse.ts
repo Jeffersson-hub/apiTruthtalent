@@ -1,3 +1,5 @@
+// pages/api/parse.ts
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../utils/supabase';
 import pdfParse from 'pdf-parse';
@@ -27,18 +29,20 @@ async function extractCVData(buffer: Buffer): Promise<candidat> {
   const telMatch = text.match(/(\+?\d[\d\s\-\(\)]{6,}\d)/);
   const nomMatch = text.match(/nom\s*:?\s*(\S.+)/i);
   const competences = Array.from(new Set((text.match(/(skills|competences|compétences)\s*[:\-\n]*([\s\S]{0,200})/i)?.[2]?.split(/[,;\n•·\-]/).map(s => s.trim()).filter(Boolean) || [])));
-  const domainMatch = text.match(/domain\s*:?\s*(\S.+)/i);
 
-  return {
-    user_id: null, // Assurez-vous de définir une valeur appropriée
-    domain: null, // Assurez-vous de définir une valeur appropriée
-    metier: null, // Assurez-vous de définir une valeur appropriée
+  const result: candidat = {
     nom: nomMatch?.[1]?.trim() ?? null,
     prenom: null, // Assurez-vous de définir une valeur appropriée
     email: emailMatch?.[0] ?? null,
     telephone: telMatch?.[0] ?? null,
     adresse: null, // Assurez-vous de définir une valeur appropriée
+    salary: undefined,
     linkedin: null, // Assurez-vous de définir une valeur appropriée
+    user_id: null, // Assurez-vous de définir une valeur appropriée
+    domaine: null, // Assurez-vous de définir une valeur appropriée
+    location: undefined,
+    description: undefined,
+    metier: null, // Assurez-vous de définir une valeur appropriée
     github: null, // Assurez-vous de définir une valeur appropriée
     autres_liens: null, // Assurez-vous de définir une valeur appropriée
     competences: competences.length > 0 ? competences : null,
@@ -49,9 +53,10 @@ async function extractCVData(buffer: Buffer): Promise<candidat> {
     resume: null, // Assurez-vous de définir une valeur appropriée
     objectif: null, // Assurez-vous de définir une valeur appropriée
     fichier_cv_url: null, // Assurez-vous de définir une valeur appropriée
-    date_analyse: new Date().toISOString() // Assurez-vous de définir une valeur appropriée
-    // cv_text: text || null
+    date_analyse: new Date().toISOString(), // Assurez-vous de définir une valeur appropriée
+    //cv_text: null,
   };
+  return result;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -98,7 +103,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             email: extractedData.email,
             telephone: extractedData.telephone,
             competences: extractedData.competences,
-            cv_text: extractedData.cv_text
+            //cv_text: extractedData.cv_text,
           }])
           .select();
 
@@ -110,7 +115,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Insérer les données dans la table "jobs"
         if (extractedData.experiences && extractedData.experiences.length > 0) {
-          const jobsInserts = extractedData.experiences.map(experience => ({
+          const jobsInserts = extractedData.experiences.map((experience: { poste: any; entreprise: any; }) => ({
             candidat_id: candidatId,
             poste: experience.poste,
             entreprise: experience.entreprise

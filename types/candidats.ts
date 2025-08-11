@@ -1,4 +1,4 @@
-// pages/api/candidats.ts
+// types/candidats.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../utils/supabase';
 

@@ -27,6 +27,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } else if (fileName.toString().endsWith('.docx')) {
     const docData = await mammoth.extractRawText({ buffer });
     text = docData.value;
+  } else if (fileName.toString().endsWith('.doc')) {
+    const docData = await mammoth.extractRawText({ buffer });
+    text = docData.value;
   }
 
   // 3. Extraire infos (exemple simple)

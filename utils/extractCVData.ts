@@ -1,23 +1,30 @@
+//utils/extractCVData.ts
+
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 
 export interface candidat {
-  user_id: any;
-  domain: any;
-  metier: any;
   nom: string | null;
   prenom: string | null;
   email: string | null;
   telephone: string | null;
   adresse: string | null;
+  salary: any;
   linkedin: string | null;
+  user_id: any;
+  domaine: any;
+  location: any;
+  description: any;
+  metier: any;
   github: string | null;
   autres_liens: string | null;
   competences: string[] | null;
-  experiences: Array<{
+  experiences: any | null;
+  /* experiences: Array<{
+    title: any;
     poste: string | null;
     entreprise: string | null;
-  }> | null;
+  }> | null; */
   formations: any | null;
   langues: any | null;
   certifications: any | null;
@@ -25,7 +32,7 @@ export interface candidat {
   objectif: string | null;
   fichier_cv_url: string | null;
   date_analyse?: string;
-  cv_text?: string;
+  //cv_text?: string;
 }
 
 function normalizePhone(raw: string | null): string | null {
@@ -131,7 +138,7 @@ export async function extractCVData(fileBuffer: Buffer): Promise<candidat> {
 
   const result: candidat = {
     user_id: null,
-    domain: null,
+    domaine: null,
     metier: null,
     nom,
     prenom,
@@ -149,10 +156,12 @@ export async function extractCVData(fileBuffer: Buffer): Promise<candidat> {
     resume,
     objectif,
     fichier_cv_url: null,
-    date_analyse: new Date().toISOString()
-    //cv_text: text || null
-    ,
-    autres_liens: null
+    date_analyse: new Date().toISOString(),
+    //cv_text: null,
+    autres_liens: null,
+    salary: undefined,
+    location: undefined,
+    description: undefined,
   };
 
   return result;

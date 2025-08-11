@@ -1,3 +1,5 @@
+// utils/supabase.ts
+
 import { createClient } from '@supabase/supabase-js';
 import { extractCVData, candidat } from './extractCVData';
 
@@ -50,11 +52,12 @@ async function processFilesFromBucket() {
           prenom: extractedData.prenom,
           email: extractedData.email,
           telephone: extractedData.telephone,
+          adresse: extractedData.adresse,
           competences: extractedData.competences,
           experiences: extractedData.experiences,
+          linkedin: extractedData.linkedin,
           formations: extractedData.formations,
           langues: extractedData.langues,
-          linkedin: extractedData.linkedin,
         }]);
 
       if (insertError) {
@@ -65,9 +68,12 @@ async function processFilesFromBucket() {
 
       // Insérer les données dans la table "jobs"
       if (extractedData.experiences && extractedData.experiences.length > 0) {
-        const jobsInserts = extractedData.experiences.map(experience => ({
-          name: experience.poste,
-          domain: "Domain",
+        const jobsInserts = extractedData.experiences.map((experience: { title: any; }) => ({
+          title: experience.title,
+          domaine: extractedData.domaine,
+          description: extractedData.description,
+          location: extractedData.location,
+          salary: extractedData.salary,
           user_id: "User ID",
         }));
 
