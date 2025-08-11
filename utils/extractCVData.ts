@@ -1,3 +1,5 @@
+// utils/extractCVData
+
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 
