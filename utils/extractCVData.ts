@@ -3,7 +3,7 @@
 import pdf from 'pdf-parse';
 import mammoth from 'mammoth';
 
-export interface candidat {
+export interface candidats {
   nom: string | null;
   prenom: string | null;
   email: string | null;
@@ -39,7 +39,7 @@ function firstMatch(regex: RegExp, text: string) {
   return m ? m[0] : null;
 }
 
-export async function extractCVData(fileBuffer: Buffer): Promise<candidat> {
+export async function extractCVData(fileBuffer: Buffer): Promise<candidats> {
   let text = '';
   try {
     const header = fileBuffer.slice(0, 4).toString();
@@ -132,7 +132,7 @@ export async function extractCVData(fileBuffer: Buffer): Promise<candidat> {
     const objectifMatch = text.match(/(objectif|objectif professionnel|career objective)[\s\S]{0,200}/i);
     const objectif = objectifMatch ? objectifMatch[0].slice(0, 500) : null;
 
-    const result: candidat = {
+    const result: candidats = {
       user_id: null,
       domaine: null,
       metier: null,

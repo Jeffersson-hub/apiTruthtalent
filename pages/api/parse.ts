@@ -5,7 +5,7 @@ import { supabase } from '../../utils/supabase';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 import Cors from 'cors';
-import { candidat } from '../../utils/extractCVData';
+import { candidats } from '../../utils/extractCVData';
 
 const cors = Cors({
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -23,14 +23,14 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) 
   });
 }
 
-async function extractCVData(buffer: Buffer): Promise<candidat> {
+async function extractCVData(buffer: Buffer): Promise<candidats> {
   const text = (await pdfParse(buffer).catch(() => null))?.text ?? (await mammoth.extractRawText({ buffer }).then(r => r.value).catch(() => '')) ?? '';
   const emailMatch = text.match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i);
   const telMatch = text.match(/(\+?\d[\d\s\-\(\)]{6,}\d)/);
   const nomMatch = text.match(/nom\s*:?\s*(\S.+)/i);
   const competences = Array.from(new Set((text.match(/(skills|competences|compétences)\s*[:\-\n]*([\s\S]{0,200})/i)?.[2]?.split(/[,;\n•·\-]/).map(s => s.trim()).filter(Boolean) || [])));
 
-  const result: candidat = {
+  const result: candidats = {
     nom: nomMatch?.[1]?.trim() ?? null,
     prenom: null, // Assurez-vous de définir une valeur appropriée
     email: emailMatch?.[0] ?? null,
@@ -102,6 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             nom: extractedData.nom,
             email: extractedData.email,
             telephone: extractedData.telephone,
+            adresse: extractedData.adresse,
             competences: extractedData.competences,
             //cv_text: extractedData.cv_text,
           }])
@@ -116,7 +117,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Insérer les données dans la table "jobs"
         if (extractedData.experiences && extractedData.experiences.length > 0) {
           const jobsInserts = extractedData.experiences.map((experience: { poste: any; entreprise: any; }) => ({
-            candidat_id: candidatId,
+            id: candidatId,
             poste: experience.poste,
             entreprise: experience.entreprise
           }));
@@ -132,9 +133,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Insérer les données dans la table "skills"
         if (extractedData.competences && extractedData.competences.length > 0) {
-          const skillsInserts = extractedData.competences.map(competence => ({
+          const skillsInserts = extractedData.competences.map((competences: any) => ({
             candidat_id: candidatId,
-            nom: competence
+            nom: competences
           }));
 
           const { error: skillsInsertError } = await supabase

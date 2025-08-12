@@ -1,7 +1,7 @@
 // utils/supabase.ts
 
 import { createClient } from '@supabase/supabase-js';
-import { extractCVData, candidat } from './extractCVData';
+import { extractCVData, candidats } from './extractCVData';
 
 const supabaseUrl = process.env.SUPABASE_URL || 'https://cpdokjsyxmohubgvxift.storage.supabase.co';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwZG9ranN5eG1vaHViZ3Z4aWZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MzI1MzQsImV4cCI6MjA2ODIwODUzNH0.R_E0t1WLWby-ZeqohAL8HUumto5uYPTJacnqij-JVaM';
