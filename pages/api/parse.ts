@@ -69,6 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const BUCKET = 'truthtalent';
     const FOLDER = 'cvs';
+    console.log("Listing files from ${BUCKET}/${FOLDER}...");
 
     const { data: files, error: listError } = await supabase.storage.from(BUCKET).list(FOLDER, { limit: 1000 });
 
@@ -94,6 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const arrayBuffer = await fileStream.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         const extractedData = await extractCVData(buffer);
+        console.log(`Inserting candidat for ${file.name}...`);
 
         // Insérer les données dans la table "candidats"
         const { data: candidatData, error: candidatInsertError } = await supabase
