@@ -98,11 +98,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
           // Insérer les expériences dans la table "jobs"
           if (extractedData.experiences && extractedData.experiences.length > 0) {
-            const jobsInserts = extractedData.experiences.map((experience: { poste: any; entreprise: any; periode: any; }) => ({
+            const jobsInserts = extractedData.experiences.map((experience: {
+              [x: string]: any; poste: any; entreprise: any; periode: any; 
+}) => ({
               candidat_id: candidatId,
+              description: experience.description,
+              location: experience.location,
+              salary: experience.salary,
               poste: experience.poste,
               entreprise: experience.entreprise,
               periode: experience.periode,
+              domaine: experience.domaine,
             }));
 
             const { error: jobsInsertError } = await supabase

@@ -12,11 +12,11 @@ export interface Candidat {
   user_id: string | null;
   domaine: string | null;
   location: string | null;
-  description: string | null;
   metier: string | null;
   github: string | null;
   autres_liens: string[] | null;
   competences: string[] | null;
+  description: string[] | null,
   experiences: Array<{
     periode: string | null;
     poste: string | null;
@@ -105,6 +105,10 @@ export async function extractCVData(fileBuffer: Buffer): Promise<Candidat> {
       let reste = l.replace(periode || '', '').trim();
       let poste: string | null = reste;
       let entreprise: string | null = null;
+      let description: string | null = null;
+      let location: string | null = null;
+      let salary: string | null = null;
+      let domaine: string | null = null;
       const sep = reste.split(/ - | — | – | chez |, /i);
       if (sep.length >= 2) {
         poste = sep[0].trim();

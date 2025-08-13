@@ -68,12 +68,18 @@ async function processFilesFromBucket() {
 
       // Insérer les données dans la table "jobs"
       if (extractedData.experiences && extractedData.experiences.length > 0) {
-        const jobsInserts = extractedData.experiences.map((experience: { poste: string | null; entreprise: string | null; periode: string | null; }) => ({
-  poste: experience.poste,
-  entreprise: experience.entreprise,
-  periode: experience.periode,
-  id: "user id", // Assure-toi que candidatId est défini
-}));
+        const jobsInserts = extractedData.experiences.map((experience: {
+          [x: string]: any; poste: string | null; entreprise: string | null; periode: string | null; 
+      }) => ({
+        poste: experience.poste,
+        description: experience.description,
+        location: experience.location,
+        entreprise: experience.entreprise,
+        salary: experience.salary,
+        periode: experience.periode,
+        domaine: experience.domaine,
+        id: "user id", // Assure-toi que candidatId est défini
+      }));
 
         const { error: InsertError } = await supabase
           .from('jobs')
