@@ -3,9 +3,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { extractCVData, candidats } from './extractCVData';
 
-const supabaseUrl = process.env.SUPABASE_URL || 'https://cpdokjsyxmohubgvxift.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwZG9ranN5eG1vaHViZ3Z4aWZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MzI1MzQsImV4cCI6MjA2ODIwODUzNH0.R_E0t1WLWby-ZeqohAL8HUumto5uYPTJacnqij-JVaM';
-export const supabase = createClient(supabaseUrl, supabaseKey);
+//const supabaseUrl = process.env.SUPABASE_URL || 'https://cpdokjsyxmohubgvxift.supabase.co';
+//const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwZG9ranN5eG1vaHViZ3Z4aWZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MzI1MzQsImV4cCI6MjA2ODIwODUzNH0.R_E0t1WLWby-ZeqohAL8HUumto5uYPTJacnqij-JVaM';
+//export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
 async function processFilesFromBucket() {
   const BUCKET = 'truthtalent';
@@ -15,7 +18,7 @@ async function processFilesFromBucket() {
   const { data: files, error: listError } = await supabase.storage.from(BUCKET).list(FOLDER, { limit: 1000 });
 
   if (listError) {
-    console.error('Erreur lors de la liste des fichiers:', listError);
+    console.error('Erreur lors de la liste des fichiers:', listError, 'Files:', files);
     return;
   }
 

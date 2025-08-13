@@ -6,11 +6,17 @@ import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 import Cors from 'cors';
 import { candidats } from '../../utils/extractCVData';
+import { createClient } from '@supabase/supabase-js';
 
 const cors = Cors({
   methods: ['GET', 'POST', 'OPTIONS'],
   origin: 'https://truthtalent.online',
 });
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY! // ⚠️ pas la clé publique
+);
 
 function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
   return new Promise((resolve, reject) => {
