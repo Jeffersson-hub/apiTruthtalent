@@ -1,7 +1,7 @@
 // utils/supabase.ts
 
 import { createClient } from '@supabase/supabase-js';
-import { extractCVData, candidats } from './extractCVData';
+import { extractCVData } from './extractCVData';
 
 export const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -68,14 +68,12 @@ async function processFilesFromBucket() {
 
       // Insérer les données dans la table "jobs"
       if (extractedData.experiences && extractedData.experiences.length > 0) {
-        const jobsInserts = extractedData.experiences.map((experience: { title: any; }) => ({
-          title: experience.title,
-          domaine: extractedData.domaine,
-          description: extractedData.description,
-          location: extractedData.location,
-          salary: extractedData.salary,
-          user_id: "User ID",
-        }));
+        const jobsInserts = extractedData.experiences.map((experience: { poste: string | null; entreprise: string | null; periode: string | null; }) => ({
+  poste: experience.poste,
+  entreprise: experience.entreprise,
+  periode: experience.periode,
+  id: "user id", // Assure-toi que candidatId est défini
+}));
 
         const { error: InsertError } = await supabase
           .from('jobs')
@@ -88,7 +86,7 @@ async function processFilesFromBucket() {
 
       // Insérer les données dans la table "skills"
       if (extractedData.competences && extractedData.competences.length > 0) {
-        const skillsInserts = extractedData.competences.map(competence => ({
+        const skillsInserts = extractedData.competences.map((competence: any) => ({
           candidat_id: "Default Candidate ID",
           nom: competence,
         }));

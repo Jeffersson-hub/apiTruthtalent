@@ -1,22 +1,14 @@
-// pages/api/parse.ts
-
 import type { NextApiRequest, NextApiResponse } from 'next';
-//import { supabase } from '../../utils/supabase';
+import { createClient } from '@supabase/supabase-js';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 import Cors from 'cors';
-import { candidats } from '../../utils/extractCVData';
-import { createClient } from '@supabase/supabase-js';
+import { extractCVData, Candidat } from '../../utils/extractCVData';
 
 const cors = Cors({
   methods: ['GET', 'POST', 'OPTIONS'],
   origin: 'https://truthtalent.online',
 });
-
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-);
 
 function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
   return new Promise((resolve, reject) => {
@@ -29,41 +21,10 @@ function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) 
   });
 }
 
-async function extractCVData(buffer: Buffer): Promise<candidats> {
-  const text = (await pdfParse(buffer).catch(() => null))?.text ?? (await mammoth.extractRawText({ buffer }).then(r => r.value).catch(() => '')) ?? '';
-  const emailMatch = text.match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i);
-  const telMatch = text.match(/(\+?\d[\d\s\-\(\)]{6,}\d)/);
-  const nomMatch = text.match(/nom\s*:?\s*(\S.+)/i);
-  const competences = Array.from(new Set((text.match(/(skills|competences|compétences)\s*[:\-\n]*([\s\S]{0,200})/i)?.[2]?.split(/[,;\n•·\-]/).map(s => s.trim()).filter(Boolean) || [])));
-
-  const result: candidats = {
-    nom: nomMatch?.[1]?.trim() ?? null,
-    prenom: null, // Assurez-vous de définir une valeur appropriée
-    email: emailMatch?.[0] ?? null,
-    telephone: telMatch?.[0] ?? null,
-    adresse: null, // Assurez-vous de définir une valeur appropriée
-    salary: undefined,
-    linkedin: null, // Assurez-vous de définir une valeur appropriée
-    user_id: null, // Assurez-vous de définir une valeur appropriée
-    domaine: null, // Assurez-vous de définir une valeur appropriée
-    location: undefined,
-    description: undefined,
-    metier: null, // Assurez-vous de définir une valeur appropriée
-    github: null, // Assurez-vous de définir une valeur appropriée
-    autres_liens: null, // Assurez-vous de définir une valeur appropriée
-    competences: competences.length > 0 ? competences : null,
-    experiences: [], // Assurez-vous de définir une valeur appropriée
-    formations: null, // Assurez-vous de définir une valeur appropriée
-    langues: null, // Assurez-vous de définir une valeur appropriée
-    certifications: null, // Assurez-vous de définir une valeur appropriée
-    resume: null, // Assurez-vous de définir une valeur appropriée
-    objectif: null, // Assurez-vous de définir une valeur appropriée
-    fichier_cv_url: null, // Assurez-vous de définir une valeur appropriée
-    date_analyse: new Date().toISOString(), // Assurez-vous de définir une valeur appropriée
-    //cv_text: null,
-  };
-  return result;
-}
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await runMiddleware(req, res, cors);
@@ -75,118 +36,137 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const BUCKET = 'truthtalent';
     const FOLDER = 'cvs';
-    console.log("Listing files from ${BUCKET}/${FOLDER}...");
 
-    const { data: files, error: listError } = await supabase.storage.from(BUCKET).list(FOLDER, { limit: 1000 });
+    // Lister les fichiers dans le bucket
+    const { data: files, error: listError } = await supabase.storage
+      .from(BUCKET)
+      .list(FOLDER, { limit: 1000 });
 
     if (listError) {
-      console.error('Erreur listing:', listError);
+      console.error('Erreur lors de la liste des fichiers:', listError);
       return res.status(500).json({ error: 'Impossible de lister les fichiers' });
     }
 
     if (!files || files.length === 0) {
-      return res.status(200).json({ total: 0, results: [] });
+      return res.status(200).json({ total_files: 0, results: [] });
     }
 
-    const resultsPromise = files.map(async (file: { name: string }) => {
-      const path = `${FOLDER}/${file.name}`;
+    // Traiter chaque fichier
+    const results = await Promise.all(
+      files.map(async (file) => {
+        const path = `${FOLDER}/${file.name}`;
+        try {
+          const { data: fileData, error: downloadError } = await supabase.storage
+            .from(BUCKET)
+            .download(path);
 
-      try {
-        const { data: fileStream, error: downloadError } = await supabase.storage.from(BUCKET).download(path);
-
-        if (downloadError || !fileStream) {
-          throw new Error(downloadError?.message || 'Erreur téléchargement');
-        }
-
-        const arrayBuffer = await fileStream.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-        const extractedData = await extractCVData(buffer);
-        console.log(`Inserting candidat for ${file.name}...`);
-
-        // Insérer les données dans la table "candidats"
-        const { data: candidatData, error: candidatInsertError } = await supabase
-          .from('candidats')
-          .insert([{
-            nom: extractedData.nom,
-            email: extractedData.email,
-            telephone: extractedData.telephone,
-            adresse: extractedData.adresse,
-            competences: extractedData.competences,
-            //cv_text: extractedData.cv_text,
-          }])
-          .select();
-
-        if (candidatInsertError) {
-          throw candidatInsertError;
-        }
-
-        const candidatId = candidatData[0].id;
-
-        // Insérer les données dans la table "jobs"
-        if (extractedData.experiences && extractedData.experiences.length > 0) {
-          const jobsInserts = extractedData.experiences.map((experience: { poste: any; entreprise: any; }) => ({
-            id: candidatId,
-            poste: experience.poste,
-            entreprise: experience.entreprise
-          }));
-
-          const { error: jobsInsertError } = await supabase
-            .from('jobs')
-            .insert(jobsInserts);
-
-          if (jobsInsertError) {
-            console.error(`Erreur lors de l'insertion des expériences pour le fichier ${file.name}:`, jobsInsertError);
+          if (downloadError || !fileData) {
+            throw new Error(downloadError?.message || 'Erreur lors du téléchargement');
           }
-        }
 
-        // Insérer les données dans la table "skills"
-        if (extractedData.competences && extractedData.competences.length > 0) {
-          const skillsInserts = extractedData.competences.map((competences: any) => ({
-            candidat_id: candidatId,
-            nom: competences
-          }));
+          const arrayBuffer = await fileData.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          const extractedData = await extractCVData(buffer);
 
-          const { error: skillsInsertError } = await supabase
-            .from('skills')
-            .insert(skillsInserts);
+          // Insérer les données dans la table "candidats"
+          const { data: candidatData, error: candidatInsertError } = await supabase
+            .from('candidats')
+            .insert([{
+              nom: extractedData.nom,
+              prenom: extractedData.prenom,
+              email: extractedData.email,
+              telephone: extractedData.telephone,
+              adresse: extractedData.adresse,
+              competences: extractedData.competences,
+              experiences: extractedData.experiences,
+              linkedin: extractedData.linkedin,
+              formations: extractedData.formations,
+              langues: extractedData.langues,
+              certifications: extractedData.certifications,
+              resume: extractedData.resume,
+              objectif: extractedData.objectif,
+              fichier_cv_url: path,
+              date_analyse: new Date().toISOString(),
+            }])
+            .select();
 
-          if (skillsInsertError) {
-            console.error(`Erreur lors de l'insertion des compétences pour le fichier ${file.name}:`, skillsInsertError);
+          if (candidatInsertError) {
+            throw candidatInsertError;
           }
+
+          const candidatId = candidatData[0].id;
+
+          // Insérer les expériences dans la table "jobs"
+          if (extractedData.experiences && extractedData.experiences.length > 0) {
+            const jobsInserts = extractedData.experiences.map((experience: { poste: any; entreprise: any; periode: any; }) => ({
+              candidat_id: candidatId,
+              poste: experience.poste,
+              entreprise: experience.entreprise,
+              periode: experience.periode,
+            }));
+
+            const { error: jobsInsertError } = await supabase
+              .from('jobs')
+              .insert(jobsInserts);
+
+            if (jobsInsertError) {
+              console.error(`Erreur lors de l'insertion des expériences pour le fichier ${file.name}:`, jobsInsertError);
+            }
+          }
+
+          // Insérer les compétences dans la table "skills"
+          if (extractedData.competences && extractedData.competences.length > 0) {
+            const skillsInserts = extractedData.competences.map((competence: any) => ({
+              candidat_id: candidatId,
+              nom: competence,
+            }));
+
+            const { error: skillsInsertError } = await supabase
+              .from('skills')
+              .insert(skillsInserts);
+
+            if (skillsInsertError) {
+              console.error(`Erreur lors de l'insertion des compétences pour le fichier ${file.name}:`, skillsInsertError);
+            }
+          }
+
+          return { file: file.name, status: 'ok', data: extractedData };
+        } catch (err) {
+          console.error(`Erreur lors du traitement du fichier ${file.name}:`, err);
+          return { file: file.name, status: 'failed', reason: err instanceof Error ? err.message : String(err) };
         }
+      })
+    );
 
-        return { file: file.name, status: 'ok', data: extractedData };
-      } catch (err: any) {
-        console.error(`Erreur fichier ${file.name}:`, err);
-        return { file: file.name, status: 'failed', reason: err?.message || String(err) };
-      }
-    });
-
-    const results = await Promise.all(resultsPromise);
-
+    // Récupérer les candidats depuis la base de données
     const emails = results
       .filter((r) => r.status === 'ok' && r.data?.email)
       .map((r) => r.data!.email);
 
     let candidatsFromDb: any[] = [];
-
-    if (emails.length) {
+    if (emails.length > 0) {
       const { data: dbRows, error: fetchError } = await supabase
         .from('candidats')
         .select('*')
         .in('email', emails)
         .order('date_analyse', { ascending: false });
 
-      if (!fetchError && dbRows) candidatsFromDb = dbRows;
+      if (!fetchError && dbRows) {
+        candidatsFromDb = dbRows;
+      }
     }
+
+    res.setHeader('Access-Control-Allow-Origin', 'https://truthtalent.online');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     return res.status(200).json({
       total_files: files.length,
       results,
-      candidats: candidatsFromDb
+      candidats: candidatsFromDb,
     });
-  } catch (error: any) {
-    console.error('Erreur générale parse:', error);
-    return res.status(500).json({ error: error?.message || 'Erreur serveur' });
+  } catch (error) {
+    console.error('Erreur générale:', error);
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'Erreur serveur' });
   }
 }
