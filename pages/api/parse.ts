@@ -1,7 +1,7 @@
 // pages/api/parse.ts
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../utils/supabase';
+//import { supabase } from '../../utils/supabase';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 import Cors from 'cors';
@@ -14,7 +14,7 @@ const cors = Cors({
 });
 
 const supabase = createClient(
-  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_URL! || "https://cpdokjsyxmohubgvxift.supabase.co",
   process.env.SUPABASE_SERVICE_ROLE_KEY! // ⚠️ pas la clé publique
 );
 
