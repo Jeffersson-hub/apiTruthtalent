@@ -14,8 +14,8 @@ const cors = Cors({
 });
 
 const supabase = createClient(
-  process.env.SUPABASE_URL! || "https://cpdokjsyxmohubgvxift.supabase.co",
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // ⚠️ pas la clé publique
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
