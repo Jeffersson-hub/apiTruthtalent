@@ -23,11 +23,13 @@
     "formidable": "^3.5.4",
     "mammoth": "^1.10.0",
     "multer": "^2.0.2",
+    "natural": "^8.1.0",
     "next": "^15.4.6",
     "next-connect": "^1.0.0",
     "pdf-parse": "^1.1.1",
     "phoenix": "^1.8.0",
-    "redux": "^5.0.1"
+    "redux": "^5.0.1",
+    "regex": "^6.0.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
