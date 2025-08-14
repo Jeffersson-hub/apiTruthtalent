@@ -26,7 +26,8 @@
     "next": "^15.4.6",
     "next-connect": "^1.0.0",
     "pdf-parse": "^1.1.1",
-    "phoenix": "^1.8.0"
+    "phoenix": "^1.8.0",
+    "redux": "^5.0.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

@@ -18,12 +18,16 @@ export interface Candidat {
   competences: string[] | null;
   description: string[] | null,
   experiences: Array<{
-    periode: string | null;
-    poste: string | null;
+    poste: string;
     entreprise: string | null;
+    periode: string | null;
+    description: string | null;
   }> | null;
   formations: Array<{ raw: string }> | null;
-  langues: string[] | null;
+  langues: Array<{
+    langue: string;
+    niveau: string;
+  }> | null;
   certifications: string[] | null;
   resume: string | null;
   objectif: string | null;
@@ -95,35 +99,44 @@ export async function extractCVData(fileBuffer: Buffer): Promise<Candidat> {
       'Flask', 'SQL', 'PostgreSQL', 'MySQL', 'MongoDB', 'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure',
       'WordPress', 'HTML', 'CSS', 'Sass', 'Tailwind', 'GraphQL', 'REST', 'Git', 'CI/CD', 'Jenkins'
     ];
-    const competences: string[] = skillsKeywords.filter(k => new RegExp(`\\b${k.replace('.', '\\.')}\\b`, 'i').test(text));
 
-    // Extraction des expériences
+    //extraction des experiences
     const experienceLines = lines.filter(l => /\b(19|20)\d{2}\b/.test(l));
-    const experiences = experienceLines.map(l => {
+const experiences = experienceLines.length
+  ? experienceLines.map(l => {
       const periodeMatch = l.match(/((19|20)\d{2}(\s*[-–]\s*(19|20)\d{2})?)/);
       const periode: string | null = periodeMatch ? periodeMatch[0] : null;
       let reste = l.replace(periode || '', '').trim();
       let poste: string | null = reste;
       let entreprise: string | null = null;
-      let description: string | null = null;
-      let location: string | null = null;
-      let salary: string | null = null;
-      let domaine: string | null = null;
       const sep = reste.split(/ - | — | – | chez |, /i);
       if (sep.length >= 2) {
         poste = sep[0].trim();
         entreprise = sep.slice(1).join(', ').trim();
       }
-      return { periode, poste, entreprise };
-    });
+      return { periode, poste, entreprise, description: null };
+    })
+  : [];
+
 
     // Extraction des formations
     const formationLines = lines.filter(l => /\b(Master|Licence|Bachelor|Bac|Dipl[oô]me|M\.Sc|MBA|BSc|PhD)\b/i.test(l));
-    const formations = formationLines.map(l => ({ raw: l }));
+const formations = formationLines.length
+  ? formationLines.map(l => ({ raw: l }))
+  : null;
+
+    
+    // Dans extractCVData.ts
+const competences: string[] = skillsKeywords.filter(k => new RegExp(`\\b${k.replace('.', '\\.')}\\b`, 'i').test(text)) || [];
+
 
     // Extraction des langues
     const languesList = (lines.join(' ').match(/\b(Anglais|Français|Espagnol|German|Allemand|Italiano|Italien|Português)\b/gi) || []).map(s => s.trim());
-    const langues: string[] | null = languesList.length ? Array.from(new Set(languesList)) : null;
+const langues = languesList.length
+  ? languesList.map(langue => ({ langue, niveau: 'Inconnu' })) // Remplacez 'Inconnu' par la logique de niveau si disponible
+  : null;
+
+
 
     // Extraction des certifications
     const certs = lines.filter(l => /\b(certificat|certification|certifié|certified|CCNA|AWS Certified|PMP|TOEIC|TOEFL)\b/i.test(l)).slice(0, 10);
@@ -154,8 +167,8 @@ export async function extractCVData(fileBuffer: Buffer): Promise<Candidat> {
       autres_liens,
       competences: competences.length ? competences : null,
       experiences: experiences.length ? experiences : null,
-      formations: formations.length ? formations : null,
-      langues,
+      formations: formations,
+      langues: null,
       certifications,
       resume,
       objectif,

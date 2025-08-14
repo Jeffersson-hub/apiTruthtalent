@@ -68,6 +68,92 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const buffer = Buffer.from(arrayBuffer);
           const extractedData = await extractCVData(buffer);
 
+
+          // Dans parse.ts, après avoir extrait les données du CV
+const { data: existingCandidat, error: fetchError } = await supabase
+  .from('candidats')
+  .select('id')
+  .eq('email', extractedData.email)
+  .maybeSingle(); // Utilise maybeSingle() pour éviter les erreurs si aucun résultat
+
+let candidat: string;
+
+if (existingCandidat) {
+  // Mettre à jour le candidat existant
+  const { error: updateError } = await supabase
+    .from('candidats')
+    .update({
+      nom: extractedData.nom,
+      prenom: extractedData.prenom,
+      telephone: extractedData.telephone,
+      competences: extractedData.competences || [],
+      langues: extractedData.langues || [],
+      formations: extractedData.formations,
+      // ... autres champs à mettre à jour
+    })
+    .eq('id', existingCandidat.id);
+
+  if (updateError) {
+    console.error(`Erreur mise à jour candidat ${extractedData.email}:`, updateError);
+    throw updateError;
+  }
+  candidat = existingCandidat.id;
+  console.log(`Candidat mis à jour: ${candidat}`);
+} else {
+  // Insérer un nouveau candidat
+  const { data: newCandidat, error: insertError } = await supabase
+    .from('candidats')
+    .insert([{
+      nom: extractedData.nom,
+      prenom: extractedData.prenom,
+      email: extractedData.email,
+      telephone: extractedData.telephone,
+      competences: extractedData.competences,
+      langues: extractedData.langues,
+      formations: extractedData.formations,
+      // ... autres champs
+    }])
+    .select('id')
+    .single();
+
+  if (insertError) {
+    console.error(`Erreur insertion candidat ${extractedData.email}:`, insertError);
+    throw insertError;
+  }
+  candidat = newCandidat.id;
+  console.log(`Nouveau candidat créé: ${candidat}`);
+}
+
+// Insérer les expériences dans la table `experiences`
+if (extractedData.experiences && extractedData.experiences.length > 0) {
+  // Supprimer les expériences existantes pour éviter les doublons
+  const { error: deleteError } = await supabase
+    .from('experiences')
+    .delete()
+    .eq('candidat_id', candidat);
+
+  if (deleteError) {
+    console.error(`Erreur suppression expériences existantes:`, deleteError);
+  }
+
+  // Insérer les nouvelles expériences
+  const experiencesInserts = extractedData.experiences.map((exp: { poste: any; entreprise: any; periode: any; description: any; }) => ({
+    candidat_id: candidat,
+    poste: exp.poste,
+    entreprise: exp.entreprise,
+    periode: exp.periode,
+    description: exp.description || null,
+  }));
+
+  const { error: expError } = await supabase
+    .from('experiences')
+    .insert(experiencesInserts);
+
+  if (expError) {
+    console.error(`Erreur insertion expériences:`, expError);
+  }
+}
+
           // Insérer les données dans la table "candidats"
           const { data: candidatData, error: candidatInsertError } = await supabase
             .from('candidats')
@@ -94,14 +180,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             throw candidatInsertError;
           }
 
-          const candidatId = candidatData[0].id;
+          const candidats = candidatData[0].id;
 
           // Insérer les expériences dans la table "jobs"
           if (extractedData.experiences && extractedData.experiences.length > 0) {
             const jobsInserts = extractedData.experiences.map((experience: {
               [x: string]: any; poste: any; entreprise: any; periode: any; 
 }) => ({
-              candidat_id: candidatId,
+              candidat_id: candidat,
               description: experience.description,
               location: experience.location,
               salary: experience.salary,
@@ -123,7 +209,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           // Insérer les compétences dans la table "skills"
           if (extractedData.competences && extractedData.competences.length > 0) {
             const skillsInserts = extractedData.competences.map((competence: any) => ({
-              candidat_id: candidatId,
+              candidat_id: candidat,
               nom: competence,
             }));
 
