@@ -30,7 +30,9 @@
     "pdf-parse": "^1.1.1",
     "phoenix": "^1.8.0",
     "redux": "^5.0.1",
-    "regex": "^6.0.1"
+    "regex": "^6.0.1",
+    "tesseract.js": "^6.0.1",
+    "textract": "^2.5.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -38,6 +40,7 @@
     "@types/pdf-parse": "^1.1.5",
     "@types/phoenix": "^1.6.6",
     "@types/react": "19.1.9",
+    "@types/textract": "^2.4.5",
     "eslint": "^9.33.0",
     "typescript": "5.9.2"
   }

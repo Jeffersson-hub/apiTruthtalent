@@ -3,6 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 import Cors from 'cors';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
+import textract from 'textract';
+import Tesseract from 'tesseract.js';
+
 
 // Interface pour les données d'un candidat
 interface Candidat {
@@ -31,6 +34,27 @@ const cors = Cors({
   methods: ['POST', 'OPTIONS'],
   origin: ['https://truthtalent.online', 'https://apitruthtalent.vercel.app'],
 });
+
+
+async function extractDoc(fileBuffer: Buffer<ArrayBufferLike>) {
+  return new Promise((resolve, reject) => {
+    textract.fromBufferWithMime(
+      'application/msword',
+      fileBuffer,
+      (error, text) => {
+        if (error) reject(error);
+        else resolve(text);
+      }
+    );
+  });
+}
+
+
+async function extractPdfOcr(fileBuffer: Tesseract.ImageLike) {
+  const { data: { text } } = await Tesseract.recognize(fileBuffer, 'fra+eng');
+  return text;
+}
+
 
 // Middleware pour gérer le CORS
 function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
