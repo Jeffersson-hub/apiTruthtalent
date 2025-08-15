@@ -181,7 +181,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               linkedin: candidat.linkedin,
               formations: candidat.formations,
               langues: candidat.langues,
-              fichier_cv_url: urlData.publicUrl,
             }])
             .select();
 
