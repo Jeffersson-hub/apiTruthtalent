@@ -33,6 +33,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
+  console.log('--- Début analyse ---')
+
   try {
     const BUCKET = 'truthtalent';
     const FOLDER = 'cvs';
@@ -50,6 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!files || files.length === 0) {
       return res.status(200).json({ total_files: 0, results: [] });
     }
+     console.log('Fichiers trouvés:', files)
 
     // Traiter chaque fichier
     const results = await Promise.all(
@@ -68,6 +71,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const buffer = Buffer.from(arrayBuffer);
           const extractedData = await extractCVData(buffer);
 
+           console.log('Fichiers traités:', files)
+
 
           // Dans parse.ts, après avoir extrait les données du CV
 const { data: existingCandidat, error: fetchError } = await supabase
@@ -75,6 +80,8 @@ const { data: existingCandidat, error: fetchError } = await supabase
   .select('id')
   .eq('email', extractedData.email)
   .maybeSingle(); // Utilise maybeSingle() pour éviter les erreurs si aucun résultat
+
+  console.log('Données extraites:', extractedData)
 
 let candidat: string;
 
