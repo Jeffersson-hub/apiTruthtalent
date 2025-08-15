@@ -7,7 +7,7 @@ import { extractCVData, Candidat } from '../../utils/extractCVData';
 
 const cors = Cors({
   methods: ['GET', 'POST', 'OPTIONS'],
-  origin: 'https://truthtalent.online',
+  origin: ['https://truthtalent.online', 'https://apitruthtalent.vercel.app'],
 });
 
 function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: Function) {
