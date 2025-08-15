@@ -144,7 +144,7 @@ function prepareCandidatForInsertion(candidat: Partial<Candidat>): Candidat {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await runMiddleware(req, res, cors);
 
-  if (req.method !== 'POST') {
+  if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
 
