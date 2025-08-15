@@ -7,32 +7,19 @@ export interface Candidat {
   email: string | null;
   telephone: string | null;
   adresse: string | null;
-  salary: number | null;
-  linkedin: string | null;
-  user_id: string | null;
-  domaine: string | null;
-  location: string | null;
-  metier: string | null;
-  github: string | null;
-  autres_liens: string[] | null;
   competences: string[] | null;
-  description: string[] | null,
   experiences: Array<{
     poste: string;
     entreprise: string | null;
     periode: string | null;
     description: string | null;
   }> | null;
+  linkedin: string | null;
   formations: Array<{ raw: string }> | null;
   langues: Array<{
     langue: string;
     niveau: string;
   }> | null;
-  certifications: string[] | null;
-  resume: string | null;
-  objectif: string | null;
-  fichier_cv_url: string | null;
-  date_analyse?: string;
 }
 
 function firstMatch(regex: RegExp, text: string): string | null {
@@ -167,24 +154,11 @@ export async function extractCVData(fileBuffer: Buffer): Promise<Candidat> {
       email,
       telephone,
       adresse,
-      salary: null,
       linkedin,
-      user_id: null,
-      domaine,
-      location,
-      description: null,
-      metier,
-      github,
-      autres_liens,
       competences: competences.length ? competences : null,
       experiences: experiences?.length ? experiences : null,
       formations: formations?.length ? formations : null,
       langues,
-      certifications,
-      resume,
-      objectif,
-      fichier_cv_url: null,
-      date_analyse: new Date().toISOString(),
     };
   } catch (error) {
     console.error('Error extracting CV data:', error);

@@ -2,11 +2,14 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { extractCVData } from './extractCVData';
+import { Candidat } from './extractCVData';
 
 export const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
+
+  
 async function processFilesFromBucket() {
   const BUCKET = 'truthtalent';
   const FOLDER = 'cvs';
