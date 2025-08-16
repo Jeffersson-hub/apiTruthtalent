@@ -1,8 +1,8 @@
 export interface Experience {
-  poste: string | null;
-  entreprise: string | null;
-  periode: string | null;
-  description: string | null;
+  poste: string;
+  entreprise: string;
+  periode: string;
+  description: string;
 }
 
 export interface Langue {
@@ -30,5 +30,5 @@ export interface Candidat {
 export interface InsertCandidatResult {
   success: boolean;
   candidatId?: string;
-  error?: string;
+  error?: Error;
 }

@@ -1,47 +1,48 @@
-// pages/api/analyze-cv.ts
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../utils/supabase';
-import mammoth from 'mammoth'; // pour docx
-import pdfParse from 'pdf-parse'; // pour pdf
+import { extractCVData } from '../../utils/extractCVData';
+import { Candidat, InsertCandidatResult } from '../../utils/types';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { fileName } = req.query;
-
-  if (!fileName) return res.status(400).json({ error: 'fileName requis' });
-
-  // 1. Télécharger le fichier depuis Supabase Storage
-  const { data, error } = await supabase.storage
-    .from('truthtalent')
-    .download(fileName as string);
-
-  if (error) return res.status(500).json({ error: error.message });
-
-  // 2. Lire le contenu du fichier
-  const arrayBuffer = await data.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-
-  let text = '';
-  if (fileName.toString().endsWith('.pdf')) {
-    const pdfData = await pdfParse(buffer);
-    text = pdfData.text;
-  } else if (fileName.toString().endsWith('.docx')) {
-    const docData = await mammoth.extractRawText({ buffer });
-    text = docData.value;
-  } else if (fileName.toString().endsWith('.doc')) {
-    const docData = await mammoth.extractRawText({ buffer });
-    text = docData.value;
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // 3. Extraire infos (exemple simple)
-  const nameMatch = text.match(/Nom\s*:\s*(.+)/i);
-  const name = nameMatch ? nameMatch[1] : null;
+  try {
+    const { fileName, bucketName } = req.body;
+    if (!fileName || !bucketName) {
+      return res.status(400).json({ error: 'fileName and bucketName are required' });
+    }
 
-  // 4. Sauvegarder dans DB
-  const { error: insertError } = await supabase
-    .from('candidats')
-    .insert([{ file_name: fileName, nom: name, texte_complet: text }]);
+    // 1. Télécharger le fichier
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from(bucketName)
+      .download(fileName);
 
-  if (insertError) return res.status(500).json({ error: insertError.message });
+    if (downloadError || !fileData) {
+      throw new Error(`Failed to download file: ${downloadError?.message}`);
+    }
 
-  res.status(200).json({ success: true, nom: name });
+    const buffer = Buffer.from(await fileData.arrayBuffer());
+
+    // 2. Extraire les données
+    const candidat = await extractCVData(buffer, fileName);
+
+    // 3. Insérer les données
+    const result: InsertCandidatResult = await insertCandidatData(candidat);
+
+    if (!result.success) {
+      throw new Error(`Insertion failed: ${result.error}`);
+    }
+
+    return res.status(200).json({ success: true, candidatId: result.candidatId });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('API Error:', errorMessage);
+    return res.status(500).json({ error: errorMessage });
+  }
 }
+function insertCandidatData(candidat: Candidat): InsertCandidatResult | PromiseLike<InsertCandidatResult> {
+  throw new Error('Function not implemented.');
+}
+

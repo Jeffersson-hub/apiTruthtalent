@@ -1,7 +1,8 @@
 // /services/processFiles.ts
 import { supabase } from "../utils/supabase";
 import { extractCVData } from "../utils/extractCVData";
-import { Experience, Competence, CandidatExtractedData } from "../types";
+import fetch from "node-fetch";
+import { Experience } from "../types";
 
 export async function processFiles(filePaths: string[]) {
   const results: any[] = [];
