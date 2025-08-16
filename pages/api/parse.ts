@@ -5,6 +5,7 @@ import mammoth from 'mammoth';
 import { fileTypeFromBuffer } from 'file-type/core';
 import { extractCVData } from '../../utils/extractCVData';
 
+
 // Configurer le bodyParser pour accepter les requêtes JSON
 export const config = {
   api: {
@@ -25,6 +26,17 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Autoriser les requêtes depuis votre domaine WordPress
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Gérer les requêtes OPTIONS (préflight CORS)
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Méthode non autorisée' });
   }
