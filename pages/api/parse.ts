@@ -109,7 +109,7 @@ export default async function handler(
           continue; // Passez à l'itération suivante
         }
 
-        const cvData = extractCVData(text);
+        const cvData = extractCVData(buffer);
         if (!cvData || Object.keys(cvData).length === 0) {
           results.push({ file: path, status: 'ERROR', error: 'Données extraites invalides' });
           continue; // Ne pas insérer si cvData est vide
