@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "CommonJS",
+    "target": "ES2022",
+    "module": "node16",
     "lib": [
       "dom",
       "dom.iterable",
@@ -17,7 +17,7 @@
     "isolatedModules": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "preserve",
-    "moduleResolution": "node"
+    "outDir": "./dist",
   },
   "include": [
     "next-env.d.ts",

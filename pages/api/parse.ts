@@ -1,8 +1,13 @@
+// parse.ts
 import { createClient } from '@supabase/supabase-js';
 import pdf from 'pdf-parse';
 import * as mammoth from 'mammoth';
+import dotenv from 'dotenv';
+import { Buffer } from 'buffer';
 
-// --- Définition des interfaces locales ---
+dotenv.config();
+
+// --- Interfaces ---
 interface Experience {
   poste: string | null;
   entreprise: string | null;
@@ -39,12 +44,12 @@ interface InsertCandidatResult {
 }
 
 // --- Client Supabase ---
-const supabase = createClient(
+export const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// --- Fonction d'extraction des données du CV ---
+// --- Fonction d'extraction ---
 async function extractCVData(fileBuffer: Buffer, fileName: string): Promise<Candidat> {
   let text = '';
   if (fileName.endsWith('.pdf')) {
@@ -54,10 +59,9 @@ async function extractCVData(fileBuffer: Buffer, fileName: string): Promise<Cand
     const result = await mammoth.extractRawText({ buffer: fileBuffer });
     text = result.value;
   } else {
-    throw new Error('Format de fichier non supporté.');
+    throw new Error('Format de fichier non supporté. Utilisez PDF ou DOCX.');
   }
 
-  // Retourne une structure valide avec des tableaux vides si aucune donnée n'est extraite
   return {
     nom: extractNom(text),
     prenom: extractPrenom(text),
@@ -90,37 +94,36 @@ function extractCompetences(text: string): string[] {
 }
 
 function extractExperiences(text: string): Experience[] {
-  return []; // À implémenter selon ton format de CV
+  return [];
 }
 
 function extractFormations(text: string): Formation[] {
-  return []; // À implémenter selon ton format de CV
+  return [];
 }
 
 function extractLangues(text: string): Langue[] {
-  return []; // À implémenter selon ton format de CV
+  return [];
 }
 
 function extractPrenom(text: string): string | null {
-  return null; // À implémenter
+  return null;
 }
 
 function extractTelephone(text: string): string | null {
-  return null; // À implémenter
+  return null;
 }
 
 function extractAdresse(text: string): string | null {
-  return null; // À implémenter
+  return null;
 }
 
 function extractLinkedIn(text: string): string | null {
-  return null; // À implémenter
+  return null;
 }
 
-// --- Fonction d'insertion dans Supabase ---
+// --- Fonction d'insertion ---
 async function insertCandidatData(candidat: Candidat): Promise<InsertCandidatResult> {
   try {
-    // 1. Insérer dans 'candidats'
     const { data: insertedCandidat, error: candidatError } = await supabase
       .from('candidats')
       .insert(candidat)
@@ -129,43 +132,34 @@ async function insertCandidatData(candidat: Candidat): Promise<InsertCandidatRes
 
     if (candidatError) throw candidatError;
 
-    // 2. Insérer les expériences dans 'jobs' (si le tableau n'est pas vide)
     if (candidat.experiences.length > 0) {
       const jobsData = candidat.experiences.map((exp: Experience) => ({
-        poste: exp.poste,
-        description: exp.description,
-        entreprise: exp.entreprise,
-        periode: exp.periode,
+        ...exp,
         candidat_id: insertedCandidat.id,
       }));
-      const { error: jobsError } = await supabase.from('jobs').insert(jobsData);
-      if (jobsError) console.error('Erreur insertion jobs:', jobsError);
+      await supabase.from('jobs').insert(jobsData);
     }
 
-    // 3. Insérer les compétences dans 'skills' (si le tableau n'est pas vide)
     if (candidat.competences.length > 0) {
       const skillsData = candidat.competences.map((competence: string) => ({
         nom: competence,
         candidat_id: insertedCandidat.id,
       }));
-      const { error: skillsError } = await supabase.from('skills').insert(skillsData);
-      if (skillsError) console.error('Erreur insertion skills:', skillsError);
+      await supabase.from('skills').insert(skillsData);
     }
 
     return { success: true, candidatId: insertedCandidat.id };
   } catch (error) {
-    console.error('Erreur globale:', error);
     return { success: false, error: error as Error };
   }
 }
 
-// --- Fonction principale pour traiter un fichier ---
+// --- Fonction principale ---
 export async function processCV(fileBuffer: Buffer, fileName: string): Promise<InsertCandidatResult> {
   try {
     const candidat = await extractCVData(fileBuffer, fileName);
     return await insertCandidatData(candidat);
   } catch (error) {
-    console.error('Erreur dans processCV:', error);
     return { success: false, error: error as Error };
   }
 }

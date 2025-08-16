@@ -1,6 +1,6 @@
 import { Candidat, Experience, Langue, Formation } from './types';
 import pdf from 'pdf-parse';
-import * as mammoth from 'mammoth';
+import mammoth from 'mammoth';
 
 export async function extractCVData(fileBuffer: Buffer, fileName: string): Promise<Candidat> {
   let text = '';
@@ -72,4 +72,21 @@ function extractAdresse(text: string): string | null {
 
 function extractLinkedIn(text: string): string | null {
   return null; // À implémenter
+}
+
+// Dans extractCVData
+console.log(`Extraction du fichier ${__filename} (taille: ${Buffer.length} octets)`);
+try {
+  if (__filename.endsWith('.pdf')) {
+    const data = await pdf(Buffer);
+    Text = data.text;
+    console.log('Extraction PDF réussie.');
+  } else if (__filename.endsWith('.docx')) {
+    const result = await mammoth.extractRawText({ buffer: Buffer });
+    Text = result.value;
+    console.log('Extraction DOCX réussie.');
+  }
+} catch (error) {
+  console.error('❌ Erreur d\'extraction :', error);
+  throw new Error(`Échec de l'extraction : ${error instanceof Error ? error.message : 'Unknown error'}`);
 }
