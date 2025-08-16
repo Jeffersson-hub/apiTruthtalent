@@ -87,7 +87,7 @@ export default async function handler(
             const pdfData = await pdf(buffer);
             text = pdfData.text;
           } else if (mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-            const docxData = await mammoth.extractRawText({ buffer });
+            const docxData = await mammoth.extractRawText({ buffer: buffer as Buffer });
             text = docxData.value;
           } else if (mime === 'text/plain') {
             text = buffer.toString('utf-8');
@@ -102,17 +102,21 @@ export default async function handler(
           continue;
         }
 
-          if (!text || text.trim().length === 0) {
-            console.warn(`Texte vide pour le fichier ${path}`);
-            results.push({ file: path, status: 'ERROR', error: 'Texte extrait vide' });
-            continue;
-          }
 
+        // Dans votre API Vercel, après l'extraction du texte :
+        if (!text || text.trim().length === 0) {
+          results.push({ file: path, status: 'ERROR', error: 'Texte extrait vide' });
+          continue; // Passez à l'itération suivante
+        }
 
-        // 6. Insérer en base
-        const { error: insertError } = await supabase
-          .from('candidats')
-          .insert([extractCVData]);
+        const cvData = extractCVData(text);
+        if (!cvData || Object.keys(cvData).length === 0) {
+          results.push({ file: path, status: 'ERROR', error: 'Données extraites invalides' });
+          continue; // Ne pas insérer si cvData est vide
+        }
+
+        const { error: insertError } = await supabase.from('candidats').insert([cvData]);
+
 
         if (insertError) {
           console.error(`Erreur insertion (${path}):`, insertError);
