@@ -8,8 +8,8 @@ export interface Candidat {
   telephone: string | null;
   adresse: string | null;
   linkedin: string | null;
-  competences: string[] | null;
-  experiences: string[] | null;
+  competences: string[];
+  experiences: string[];
   formations: string[] | null;
   langues: string[] | null;
 }
