@@ -2,47 +2,11 @@
 import { Candidat, Experience, Langue, Formation, InsertCandidatResult } from '../../utils/types';
 import { createClient } from '@supabase/supabase-js';
 import pdf from 'pdf-parse';
-import * as mammoth from 'mammoth';
+import mammoth from 'mammoth';
 import dotenv from 'dotenv';
 import { Buffer } from 'buffer';
 
 dotenv.config();
-
-/* // --- Interfaces ---
-interface Experience {
-  poste: string | null;
-  entreprise: string | null;
-  periode: string | null;
-  description: string | null;
-}
-
-interface Langue {
-  langue: string;
-  niveau: string;
-}
-
-interface Formation {
-  raw: string;
-}
-
-interface Candidat {
-  nom: string | null;
-  prenom: string | null;
-  email: string | null;
-  telephone: string | null;
-  adresse: string | null;
-  competences: string[];
-  experiences: Experience[];
-  linkedin: string | null;
-  formations: Formation[];
-  langues: Langue[];
-}
-
-interface InsertCandidatResult {
-  success: boolean;
-  candidatId?: string;
-  error?: Error;
-} */
 
 // --- Client Supabase ---
 export const supabase = createClient(
@@ -84,18 +48,46 @@ function extractExperiences(text: string): Experience[] {
 }
 
 function extractFormations(text: string): Formation[] {
-  // Exemple basique : à adapter
-  return [];
+  // Regex pour capturer les formations (ex: "Master en Informatique à l'Université de Paris (2018-2020)")
+  const formationRegex = /(?:formation|diplôme|études?|licence|master|bac[+\s]?[0-9]*)\s*:?\s*([^\n]+?)(?:\n|$)/gi;
+  const formations: Formation[] = [];
+  let match;
+
+  while ((match = formationRegex.exec(text)) !== null) {
+    const formationText = match[1].trim();
+    if (formationText) {
+      formations.push({
+        raw: formationText,
+      });
+    }
+  }
+
+  return formations;
 }
 
 function extractLangues(text: string): Langue[] {
-  // Exemple basique : à adapter
-  return [];
+  // Regex pour capturer les langues et niveaux (ex: "Anglais : Courant", "Espagnol - B2")
+  const langueRegex = /([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s*(?:[:-\–]\s*)([A-Za-z0-9\s\-]+)/g;
+  const langues: Langue[] = [];
+  let match;
+
+  while ((match = langueRegex.exec(text)) !== null) {
+    const langue = match[1].trim();
+    const niveau = match[2].trim();
+    if (langue && niveau) {
+      langues.push({
+        langue,
+        niveau,
+      });
+    }
+  }
+
+  return langues;
 }
 
 function extractPrenom(text: string): string | null {
-  // Exemple basique : à adapter
-  return null;
+  const prenom = text.match(/([A-Z][a-zA-Z]+)\s+([A-Z][a-zA-Z]+)/);
+  return prenom ? prenom[0] : null;
 }
 
 function extractTelephone(text: string): string | null {

@@ -1,7 +1,6 @@
 // pages/api/list-cv.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../utils/supabase';
-import type { FileObject } from '@supabase/storage-js'; // si tu utilises ce package
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
