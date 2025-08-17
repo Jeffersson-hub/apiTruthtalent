@@ -1,8 +1,9 @@
 // utils/extractCVData.ts
+import { Candidat, Experience, Langue, Formation } from './types';
 import pdf from 'pdf-parse';
 import * as mammoth from 'mammoth';
 
-// --- Interfaces pour les données extraites ---
+/* // --- Interfaces pour les données extraites ---
 export interface Experience {
   poste: string | null;
   entreprise: string | null;
@@ -30,7 +31,7 @@ export interface Candidat {
   linkedin: string | null;
   formations: Formation[];
   langues: Langue[];
-}
+} */
 
 // --- Fonctions d'extraction basiques ---
 export function extractNom(text: string): string | null {

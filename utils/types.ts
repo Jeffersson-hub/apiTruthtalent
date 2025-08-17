@@ -1,17 +1,17 @@
 export interface Experience {
-  poste: string;
-  entreprise: string;
-  periode: string;
-  description: string;
+  poste: string | null;
+  entreprise: string | null;
+  periode: string | null;
+  description: string | null;
 }
 
 export interface Langue {
-  langue: string;
-  niveau: string;
+  langue: string | null;
+  niveau: string | null;
 }
 
 export interface Formation {
-  raw: string;
+  raw: string | null;
 }
 
 export interface Candidat {

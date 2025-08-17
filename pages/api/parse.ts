@@ -1,4 +1,5 @@
 // parse.ts
+import { Candidat, Experience, Langue, Formation, InsertCandidatResult } from '../../utils/types';
 import { createClient } from '@supabase/supabase-js';
 import pdf from 'pdf-parse';
 import * as mammoth from 'mammoth';
@@ -7,7 +8,7 @@ import { Buffer } from 'buffer';
 
 dotenv.config();
 
-// --- Interfaces ---
+/* // --- Interfaces ---
 interface Experience {
   poste: string | null;
   entreprise: string | null;
@@ -41,7 +42,7 @@ interface InsertCandidatResult {
   success: boolean;
   candidatId?: string;
   error?: Error;
-}
+} */
 
 // --- Client Supabase ---
 export const supabase = createClient(
