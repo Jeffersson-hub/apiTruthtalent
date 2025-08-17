@@ -2,7 +2,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { extractCVData } from '../../utils/extractCVData';
 import { insertCandidatData } from '../../utils/supabase';
-import { Candidat } from '../../utils/types';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
