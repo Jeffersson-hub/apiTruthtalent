@@ -67,7 +67,7 @@ function extractFormations(text: string): Formation[] {
 
 function extractLangues(text: string): Langue[] {
   // Regex pour capturer les langues et niveaux (ex: "Anglais : Courant", "Espagnol - B2")
-  const langueRegex = /([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s*(?:[:-\–]\s*)([A-Za-z0-9\s\-]+)/g;
+  const langueRegex = /([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s*(?:[:-]\s*)([A-Za-z0-9\s]+)/g;
   const langues: Langue[] = [];
   let match;
 
@@ -95,10 +95,10 @@ function extractTelephone(text: string): string | null {
   return match ? match[0] : null;
 }
 
-function extractAdresse(text: string): string | null {
+/* function extractAdresse(text: string): string | null {
   // Exemple basique : à adapter
   return null;
-}
+} */
 
 function extractLinkedIn(text: string): string | null {
   const match = text.match(/linkedin\.com\/in\/([a-zA-Z0-9-]+)/);
@@ -126,7 +126,7 @@ async function extractCVData(fileBuffer: Buffer, fileName: string): Promise<Cand
     prenom: extractPrenom(text),
     email: extractEmail(text),
     telephone: extractTelephone(text),
-    adresse: extractAdresse(text),
+    //adresse: extractAdresse(text),
     competences: extractCompetences(text),
     experiences: extractExperiences(text),
     linkedin: extractLinkedIn(text),

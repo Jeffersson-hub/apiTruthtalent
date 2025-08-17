@@ -130,7 +130,7 @@ export async function extractCVData(fileBuffer: Buffer, fileName: string): Promi
     prenom: extractPrenom(text),
     email: extractEmail(text),
     telephone: extractTelephone(text),
-    adresse: extractAdresse(text),
+    //adresse: extractAdresse(text),
     competences: extractCompetences(text),
     experiences: extractExperiences(text),
     linkedin: extractLinkedIn(text),
