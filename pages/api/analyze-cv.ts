@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: errorMessage });
   }
 }
-function insertCandidatData(candidat: Candidat): InsertCandidatResult | PromiseLike<InsertCandidatResult> {
+function insertCandidatData(_candidat: Candidat): InsertCandidatResult | PromiseLike<InsertCandidatResult> {
   throw new Error('Function not implemented.');
 }
 

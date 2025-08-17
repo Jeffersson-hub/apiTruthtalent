@@ -73,8 +73,19 @@ export function extractFormations(text: string): Formation[] {
 }
 
 export function extractLangues(text: string): Langue[] {
-  // À implémenter selon le format de vos CV
-  return [];
+  const langueRegex = /([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s*(?:[:-\u2013]\s*)([A-Za-z0-9\s-]+)/g;
+  const langues: Langue[] = [];
+  let match;
+
+  while ((match = langueRegex.exec(text)) !== null) {
+    const langue = match[1].trim();
+    const niveau = match[2].trim();
+    if (langue && niveau) {
+      langues.push({ langue, niveau });
+    }
+  }
+
+  return langues;
 }
 
 export function extractPrenom(text: string): string | null {
