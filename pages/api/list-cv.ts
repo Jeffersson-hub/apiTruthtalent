@@ -19,12 +19,11 @@ export default async function handler(
       .from('candidats')
       .select('id, nom, email');
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     res.status(200).json(candidats || []);
   } catch (err) {
+    console.error('Failed to fetch CVs:', err); 
     res.status(500).json({ error: 'Failed to fetch CVs' });
   }
 }

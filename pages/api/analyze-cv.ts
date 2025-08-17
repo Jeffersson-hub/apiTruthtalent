@@ -42,7 +42,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: errorMessage });
   }
 }
-function insertCandidatData(_candidat: Candidat): InsertCandidatResult | PromiseLike<InsertCandidatResult> {
-  throw new Error('Function not implemented.');
+// pages/api/analyze-cv.ts
+async function insertCandidatData(candidat: Candidat): Promise<InsertCandidatResult> {
+  try {
+    const { data: insertedCandidat, error } = await supabase
+      .from('candidats')
+      .insert(candidat)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return { success: true, candidatId: insertedCandidat.id };
+  } catch (error) {
+    return { success: false, error: error as Error };
+  }
 }
+
 
