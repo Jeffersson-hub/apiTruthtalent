@@ -11,9 +11,9 @@ console.log('SUPABASE_SERVICE_ROLE_KEY:', !!process.env.SUPABASE_SERVICE_ROLE_KE
 
 
 // 1. Chemin vers un fichier CV local (remplace par ton fichier)
-const filePath = path.join(__dirname, './cv_it.docx');
+const filePath = path.join(__dirname, './CV_Industrie_IT.pdf');
 const fileBuffer = fs.readFileSync(filePath);
-const fileName = 'cv_it.docx';
+const fileName = 'CV_Industrie_IT.pdf';
 
 // 2. Appel de la fonction principale
 async function testLocal() {
