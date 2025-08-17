@@ -1,6 +1,5 @@
 // pages/api/parse.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { Candidat } from '../../utils/types';
 import { extractCVData } from '../../utils/extractCVData';
 import dotenv from 'dotenv';
 import { Buffer } from 'buffer';
