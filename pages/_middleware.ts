@@ -1,6 +1,5 @@
 // pages/_middleware.ts
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
 export function middleware() {  // eslint-disable-line @typescript-eslint/no-unused-vars
   const response = NextResponse.next();
