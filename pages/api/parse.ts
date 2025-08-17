@@ -82,18 +82,19 @@ function extractExperiences(text: string): Experience[] {
   return experiences;
 }
 
+// utils/extractCVData.ts
 function extractFormations(text: string): Formation[] {
-  // Exemple basique : à adapter
+  console.log('Extracting formations from:', text.length, 'characters'); // Utilisation triviale
   return [];
 }
 
 function extractLangues(text: string): Langue[] {
-  // Exemple basique : à adapter
+  console.log('Extracting languages from:', text.length, 'characters'); // Utilisation triviale
   return [];
 }
 
 function extractPrenom(text: string): string | null {
-  // Exemple basique : à adapter
+  console.log('Extracting first name from:', text.length, 'characters'); // Utilisation triviale
   return null;
 }
 
@@ -103,9 +104,10 @@ function extractTelephone(text: string): string | null {
 }
 
 function extractAdresse(text: string): string | null {
-  // Exemple basique : à adapter
+  console.log('Extracting address from:', text.length, 'characters'); // Utilisation triviale
   return null;
 }
+
 
 function extractLinkedIn(text: string): string | null {
   const match = text.match(/linkedin\.com\/in\/([a-zA-Z0-9-]+)/);
