@@ -49,34 +49,7 @@ export const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// --- Fonction d'extraction ---
-async function extractCVData(fileBuffer: Buffer, fileName: string): Promise<Candidat> {
-  let text = '';
-  if (fileName.endsWith('.pdf')) {
-    const data = await pdf(fileBuffer);
-    text = data.text;
-  } else if (fileName.endsWith('.docx')) {
-    const result = await mammoth.extractRawText({ buffer: fileBuffer });
-    text = result.value;
-  } else {
-    throw new Error('Format de fichier non supporté. Utilisez PDF ou DOCX.');
-  }
-
-  return {
-    nom: extractNom(text),
-    prenom: extractPrenom(text),
-    email: extractEmail(text),
-    telephone: extractTelephone(text),
-    adresse: extractAdresse(text),
-    competences: extractCompetences(text),
-    experiences: extractExperiences(text),
-    linkedin: extractLinkedIn(text),
-    formations: extractFormations(text),
-    langues: extractLangues(text),
-  };
-}
-
-// --- Fonctions d'extraction basiques ---
+// --- Fonctions d'extraction ---
 function extractNom(text: string): string | null {
   const match = text.match(/([A-Z][a-zA-Z]+)\s+([A-Z][a-zA-Z]+)/);
   return match ? match[0] : null;
@@ -94,34 +67,82 @@ function extractCompetences(text: string): string[] {
 }
 
 function extractExperiences(text: string): Experience[] {
-  return [];
+  // Exemple basique : à adapter selon le format de vos CV
+  const experienceRegex = /(?:expérience|poste|emploi)[\s\S]*?([A-Z][a-zA-Z\s]+?)\s*(?:chez|@|-)\s*([A-Z][a-zA-Z\s]+?)\s*(?:\(?([\d\-\s]+?)\)?)/g;
+  const experiences: Experience[] = [];
+  let match;
+  while ((match = experienceRegex.exec(text)) !== null) {
+    experiences.push({
+      poste: match[1].trim(),
+      entreprise: match[2].trim(),
+      periode: match[3] ? match[3].trim() : null,
+      description: null,
+    });
+  }
+  return experiences;
 }
 
 function extractFormations(text: string): Formation[] {
+  // Exemple basique : à adapter
   return [];
 }
 
 function extractLangues(text: string): Langue[] {
+  // Exemple basique : à adapter
   return [];
 }
 
 function extractPrenom(text: string): string | null {
+  // Exemple basique : à adapter
   return null;
 }
 
 function extractTelephone(text: string): string | null {
-  return null;
+  const match = text.match(/(\+?\d{2,3}[-\s]?\d{2,3}[-\s]?\d{2,3}[-\s]?\d{2,3})/);
+  return match ? match[0] : null;
 }
 
 function extractAdresse(text: string): string | null {
+  // Exemple basique : à adapter
   return null;
 }
 
 function extractLinkedIn(text: string): string | null {
-  return null;
+  const match = text.match(/linkedin\.com\/in\/([a-zA-Z0-9-]+)/);
+  return match ? `linkedin.com/in/${match[1]}` : null;
 }
 
-// --- Fonction d'insertion ---
+// --- Extraction du texte ---
+async function extractTextFromBuffer(fileBuffer: Buffer, fileName: string): Promise<string> {
+  if (fileName.endsWith('.pdf')) {
+    const data = await pdf(fileBuffer);
+    return data.text;
+  } else if (fileName.endsWith('.docx')) {
+    const result = await mammoth.extractRawText({ buffer: fileBuffer });
+    return result.value;
+  } else {
+    throw new Error('Format de fichier non supporté. Utilisez PDF ou DOCX.');
+  }
+}
+
+// --- Extraction des données du CV ---
+async function extractCVData(fileBuffer: Buffer, fileName: string): Promise<Candidat> {
+  const text = await extractTextFromBuffer(fileBuffer, fileName);
+  return {
+    nom: extractNom(text),
+    prenom: extractPrenom(text),
+    email: extractEmail(text),
+    telephone: extractTelephone(text),
+    adresse: extractAdresse(text),
+    competences: extractCompetences(text),
+    experiences: extractExperiences(text),
+    linkedin: extractLinkedIn(text),
+    formations: extractFormations(text),
+    langues: extractLangues(text),
+  };
+}
+
+// --- Insertion en base ---
 async function insertCandidatData(candidat: Candidat): Promise<InsertCandidatResult> {
   try {
     const { data: insertedCandidat, error: candidatError } = await supabase
@@ -129,11 +150,10 @@ async function insertCandidatData(candidat: Candidat): Promise<InsertCandidatRes
       .insert(candidat)
       .select()
       .single();
-
     if (candidatError) throw candidatError;
 
     if (candidat.experiences.length > 0) {
-      const jobsData = candidat.experiences.map((exp: Experience) => ({
+      const jobsData = candidat.experiences.map((exp) => ({
         ...exp,
         candidat_id: insertedCandidat.id,
       }));
@@ -141,7 +161,7 @@ async function insertCandidatData(candidat: Candidat): Promise<InsertCandidatRes
     }
 
     if (candidat.competences.length > 0) {
-      const skillsData = candidat.competences.map((competence: string) => ({
+      const skillsData = candidat.competences.map((competence) => ({
         nom: competence,
         candidat_id: insertedCandidat.id,
       }));
