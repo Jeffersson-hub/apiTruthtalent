@@ -138,3 +138,5 @@ export async function extractCVData(fileBuffer: Buffer, fileName: string): Promi
     langues: extractLangues(text),
   };
 }
+export type { Candidat };
+

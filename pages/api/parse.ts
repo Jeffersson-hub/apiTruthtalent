@@ -1,66 +1,185 @@
-// pages/api/parse.ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import { extractCVData } from '../../utils/extractCVData';
+// parse.ts
+import { createClient } from '@supabase/supabase-js';
+import pdf from 'pdf-parse';
+import * as mammoth from 'mammoth';
 import dotenv from 'dotenv';
 import { Buffer } from 'buffer';
-import { insertCandidatData } from '@/utils/supabase';
 
 dotenv.config();
 
-interface FileData {
-  url: string;
-  name: string;
+// --- Interfaces ---
+interface Experience {
+  poste: string | null;
+  entreprise: string | null;
+  periode: string | null;
+  description: string | null;
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+interface Langue {
+  langue: string;
+  niveau: string;
+}
 
-  try {
-    // 2. Récupérer les données envoyées par WordPress
-    const { files } = req.body;
-    if (!files || !Array.isArray(files)) {
-      return res.status(400).json({ success: false, error: 'Invalid files data' });
-    }
+interface Formation {
+  raw: string;
+}
 
-    // 3. Traiter chaque fichier
-    for (const file of files as FileData[]) {
-      console.log(`Processing file: ${file.name} (URL: ${file.url})`);
+interface Candidat {
+  nom: string | null;
+  prenom: string | null;
+  email: string | null;
+  telephone: string | null;
+  adresse: string | null;
+  competences: string[];
+  experiences: Experience[];
+  linkedin: string | null;
+  formations: Formation[];
+  langues: Langue[];
+}
 
-      // 4. Télécharger le fichier depuis l'URL
-      const response = await fetch(file.url);
-      if (!response.ok) {
-        console.error(`Failed to download ${file.name}: HTTP ${response.status}`);
-        continue;
-      }
+interface InsertCandidatResult {
+  success: boolean;
+  candidatId?: string;
+  error?: Error;
+}
 
-      const fileBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(fileBuffer);
+// --- Client Supabase ---
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-      // 5. Extraire les données du CV
-      const candidat = await extractCVData(buffer, file.name);
-      console.log(`Extracted data for ${file.name}:`, candidat);
+// --- Fonctions d'extraction ---
+function extractNom(text: string): string | null {
+  const match = text.match(/([A-Z][a-zA-Z]+)\s+([A-Z][a-zA-Z]+)/);
+  return match ? match[0] : null;
+}
 
-      // 6. Insérer en base de données
-      const result = await insertCandidatData(candidat);
-      if (!result.success) {
-        console.error(`Failed to insert ${file.name}:`, result.error);
-      } else {
-        console.log(`Successfully inserted ${file.name} with ID: ${result.candidatId}`);
-      }
-    }
+function extractEmail(text: string): string | null {
+  const match = text.match(/\S+@\S+/);
+  return match ? match[0] : null;
+}
 
-    // 7. Répondre avec succès
-    return res.status(200).json({ success: true });
-  } catch (error) {
-    console.error('API Error:', error);
-    return res.status(500).json({
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+function extractCompetences(text: string): string[] {
+  const competencesSection = text.match(/compétences?:([\s\S]*?)(?=\n\w+:|$)/i);
+  if (!competencesSection) return [];
+  return competencesSection[1].split(',').map(c => c.trim()).filter(c => c.length > 0);
+}
+
+function extractExperiences(text: string): Experience[] {
+  // Exemple basique : à adapter selon le format de vos CV
+  const experienceRegex = /(?:expérience|poste|emploi)[\s\S]*?([A-Z][a-zA-Z\s]+?)\s*(?:chez|@|-)\s*([A-Z][a-zA-Z\s]+?)\s*(?:\(?([\d\-\s]+?)\)?)/g;
+  const experiences: Experience[] = [];
+  let match;
+  while ((match = experienceRegex.exec(text)) !== null) {
+    experiences.push({
+      poste: match[1].trim(),
+      entreprise: match[2].trim(),
+      periode: match[3] ? match[3].trim() : null,
+      description: null,
     });
+  }
+  return experiences;
+}
+
+function extractFormations(text: string): Formation[] {
+  // Exemple basique : à adapter
+  return [];
+}
+
+function extractLangues(text: string): Langue[] {
+  // Exemple basique : à adapter
+  return [];
+}
+
+function extractPrenom(text: string): string | null {
+  // Exemple basique : à adapter
+  return null;
+}
+
+function extractTelephone(text: string): string | null {
+  const match = text.match(/(\+?\d{2,3}[-\s]?\d{2,3}[-\s]?\d{2,3}[-\s]?\d{2,3})/);
+  return match ? match[0] : null;
+}
+
+function extractAdresse(text: string): string | null {
+  // Exemple basique : à adapter
+  return null;
+}
+
+function extractLinkedIn(text: string): string | null {
+  const match = text.match(/linkedin\.com\/in\/([a-zA-Z0-9-]+)/);
+  return match ? `linkedin.com/in/${match[1]}` : null;
+}
+
+// --- Extraction du texte ---
+async function extractTextFromBuffer(fileBuffer: Buffer, fileName: string): Promise<string> {
+  if (fileName.endsWith('.pdf')) {
+    const data = await pdf(fileBuffer);
+    return data.text;
+  } else if (fileName.endsWith('.docx')) {
+    const result = await mammoth.extractRawText({ buffer: fileBuffer });
+    return result.value;
+  } else {
+    throw new Error('Format de fichier non supporté. Utilisez PDF ou DOCX.');
+  }
+}
+
+// --- Extraction des données du CV ---
+async function extractCVData(fileBuffer: Buffer, fileName: string): Promise<Candidat> {
+  const text = await extractTextFromBuffer(fileBuffer, fileName);
+  return {
+    nom: extractNom(text),
+    prenom: extractPrenom(text),
+    email: extractEmail(text),
+    telephone: extractTelephone(text),
+    adresse: extractAdresse(text),
+    competences: extractCompetences(text),
+    experiences: extractExperiences(text),
+    linkedin: extractLinkedIn(text),
+    formations: extractFormations(text),
+    langues: extractLangues(text),
+  };
+}
+
+// --- Insertion en base ---
+async function insertCandidatData(candidat: Candidat): Promise<InsertCandidatResult> {
+  try {
+    const { data: insertedCandidat, error: candidatError } = await supabase
+      .from('candidats')
+      .insert(candidat)
+      .select()
+      .single();
+    if (candidatError) throw candidatError;
+
+    if (candidat.experiences.length > 0) {
+      const jobsData = candidat.experiences.map((exp) => ({
+        ...exp,
+        candidat_id: insertedCandidat.id,
+      }));
+      await supabase.from('jobs').insert(jobsData);
+    }
+
+    if (candidat.competences.length > 0) {
+      const skillsData = candidat.competences.map((competence) => ({
+        nom: competence,
+        candidat_id: insertedCandidat.id,
+      }));
+      await supabase.from('skills').insert(skillsData);
+    }
+
+    return { success: true, candidatId: insertedCandidat.id };
+  } catch (error) {
+    return { success: false, error: error as Error };
+  }
+}
+
+// --- Fonction principale ---
+export async function processCV(fileBuffer: Buffer, fileName: string): Promise<InsertCandidatResult> {
+  try {
+    const candidat = await extractCVData(fileBuffer, fileName);
+    return await insertCandidatData(candidat);
+  } catch (error) {
+    return { success: false, error: error as Error };
   }
 }

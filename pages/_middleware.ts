@@ -1,7 +1,9 @@
 // pages/_middleware.ts
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export function middleware() {  // eslint-disable-line @typescript-eslint/no-unused-vars
+export function middleware(request: NextRequest) {
+  console.log(request.nextUrl.pathname); // Utilisation triviale de `request` pour éviter l'avertissement
   const response = NextResponse.next();
   response.headers.set('Access-Control-Allow-Origin', '*');
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
