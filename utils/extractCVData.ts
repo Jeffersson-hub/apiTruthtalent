@@ -1,78 +1,26 @@
 // utils/extractCVData.ts
-import { Candidat, Experience, Langue, Formation } from './types';
-import pdf from 'pdf-parse';
-import * as mammoth from 'mammoth';
+import { Candidat, Experience, Formation, Langue } from './types'; // Assurez-vous que les interfaces sont définies dans `types.ts`
 
-/* // --- Interfaces pour les données extraites ---
-export interface Experience {
-  poste: string | null;
-  entreprise: string | null;
-  periode: string | null;
-  description: string | null;
-}
-
-export interface Langue {
-  langue: string;
-  niveau: string;
-}
-
-export interface Formation {
-  raw: string;
-}
-
-export interface Candidat {
-  nom: string | null;
-  prenom: string | null;
-  email: string | null;
-  telephone: string | null;
-  adresse: string | null;
-  competences: string[];
-  experiences: Experience[];
-  linkedin: string | null;
-  formations: Formation[];
-  langues: Langue[];
-} */
-
-// --- Fonctions d'extraction basiques ---
-export function extractNom(text: string): string | null {
-  // Exemple : cherche une chaîne de 2 mots en majuscules (à adapter)
-  const match = text.match(/([A-Z][a-zA-Z]+)\s+([A-Z][a-zA-Z]+)/);
-  return match ? match[0] : null;
-}
-
-export function extractEmail(text: string): string | null {
-  const match = text.match(/\S+@\S+/);
-  return match ? match[0] : null;
-}
-
-export function extractCompetences(text: string): string[] {
-  const competencesSection = text.match(/compétences?:([\s\S]*?)(?=\n\w+:|$)/i);
-  if (!competencesSection) return [];
-  return competencesSection[1].split(',').map(c => c.trim()).filter(c => c.length > 0);
-}
-
-export function extractExperiences(text: string): Experience[] {
-  // Exemple : cherche des blocs "Poste chez Entreprise (Période)"
-  const experienceRegex = /(?:expérience|poste|emploi)[\s\S]*?([A-Z][a-zA-Z\s]+?)\s*(?:chez|@|-)\s*([A-Z][a-zA-Z\s]+?)\s*(?:\(?([\d\-\s]+?)\)?)/g;
-  const experiences: Experience[] = [];
-  let match;
-  while ((match = experienceRegex.exec(text)) !== null) {
-    experiences.push({
-      poste: match[1].trim(),
-      entreprise: match[2].trim(),
-      periode: match[3] ? match[3].trim() : null,
-      description: null,
-    });
-  }
-  return experiences;
-}
-
+// Fonction pour extraire les formations
 export function extractFormations(text: string): Formation[] {
-  // À implémenter selon le format de vos CV
-  return [];
+  // Regex pour capturer les sections "Formation", "Diplôme", "Études", etc.
+  const formationRegex = /(?:formation|diplôme|études?|licence|master|bac[+\s]?[0-9]*)\s*:?\s*([^\n]+?)(?=\n|$)/gi;
+  const formations: Formation[] = [];
+  let match;
+
+  while ((match = formationRegex.exec(text)) !== null) {
+    const formationText = match[1].trim();
+    if (formationText) {
+      formations.push({ raw: formationText });
+    }
+  }
+
+  return formations;
 }
 
+// Fonction pour extraire les langues et leurs niveaux
 export function extractLangues(text: string): Langue[] {
+  // Regex pour capturer les langues (ex: "Anglais : Courant", "Espagnol - B2")
   const langueRegex = /([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s*(?:[:-\u2013]\s*)([A-Za-z0-9\s-]+)/g;
   const langues: Langue[] = [];
   let match;
@@ -88,32 +36,71 @@ export function extractLangues(text: string): Langue[] {
   return langues;
 }
 
+// Fonction pour extraire le prénom
 export function extractPrenom(text: string): string | null {
-  // À implémenter selon le format de vos CV
-  return null;
+  // Regex pour capturer le prénom (ex: "Jean DUPONT" -> "Jean")
+  const match = text.match(/^\s*([A-Z][a-zA-Z]+)\s+[A-Z][a-zA-Z]+/);
+  return match ? match[1] : null;
 }
 
+// Fonction pour extraire le téléphone (déjà implémentée)
 export function extractTelephone(text: string): string | null {
   const match = text.match(/(\+?\d{2,3}[-\s]?\d{2,3}[-\s]?\d{2,3}[-\s]?\d{2,3})/);
   return match ? match[0] : null;
 }
 
+// Fonction pour extraire l'adresse
 export function extractAdresse(text: string): string | null {
-  // À implémenter selon le format de vos CV
-  return null;
+  // Regex pour capturer une adresse (ex: "123 Rue de Paris, 75000 Paris")
+  const match = text.match(/\d+\s+[A-Za-z\s]+,\s*\d{5}\s+[A-Za-z\s]+/);
+  return match ? match[0] : null;
 }
 
-export function extractLinkedIn(text: string): string | null {
-  const match = text.match(/linkedin\.com\/in\/([a-zA-Z0-9-]+)/);
-  return match ? `linkedin.com/in/${match[1]}` : null;
+// Fonction pour extraire le nom (déjà implémentée)
+export function extractNom(text: string): string | null {
+  const match = text.match(/([A-Z][a-zA-Z]+)\s+([A-Z][a-zA-Z]+)/);
+  return match ? match[0] : null;
 }
 
-// --- Extraction du texte depuis le buffer ---
+// Fonction pour extraire l'email (déjà implémentée)
+export function extractEmail(text: string): string | null {
+  const match = text.match(/\S+@\S+/);
+  return match ? match[0] : null;
+}
+
+// Fonction pour extraire les compétences (déjà implémentée)
+export function extractCompetences(text: string): string[] {
+  const competencesSection = text.match(/compétences?:([\s\S]*?)(?=\n\w+:|$)/i);
+  if (!competencesSection) return [];
+  return competencesSection[1].split(',').map(c => c.trim()).filter(c => c.length > 0);
+}
+
+// Fonction pour extraire les expériences (déjà implémentée)
+export function extractExperiences(text: string): Experience[] {
+  const experienceRegex = /(?:expérience|poste|emploi)[\s\S]*?([A-Z][a-zA-Z\s]+?)\s*(?:chez|@|-)\s*([A-Z][a-zA-Z\s]+?)\s*(?:\(?([\d\-\s]+?)\)?)/g;
+  const experiences: Experience[] = [];
+  let match;
+
+  while ((match = experienceRegex.exec(text)) !== null) {
+    experiences.push({
+      poste: match[1].trim(),
+      entreprise: match[2].trim(),
+      periode: match[3] ? match[3].trim() : null,
+      description: null,
+    });
+  }
+
+  return experiences;
+}
+
+// Fonction pour extraire le texte depuis le buffer
 export async function extractTextFromBuffer(fileBuffer: Buffer, fileName: string): Promise<string> {
   if (fileName.endsWith('.pdf')) {
+    const pdf = (await import('pdf-parse')).default;
     const data = await pdf(fileBuffer);
     return data.text;
   } else if (fileName.endsWith('.docx')) {
+    const mammoth = await import('mammoth');
     const result = await mammoth.extractRawText({ buffer: fileBuffer });
     return result.value;
   } else {
@@ -121,16 +108,15 @@ export async function extractTextFromBuffer(fileBuffer: Buffer, fileName: string
   }
 }
 
-// --- Extraction complète des données du CV ---
+// Fonction principale pour extraire les données du CV
 export async function extractCVData(fileBuffer: Buffer, fileName: string): Promise<Candidat> {
-  console.log(`Extraction du fichier ${fileName} (taille: ${fileBuffer.length} octets)`);
   const text = await extractTextFromBuffer(fileBuffer, fileName);
   return {
     nom: extractNom(text),
     prenom: extractPrenom(text),
     email: extractEmail(text),
     telephone: extractTelephone(text),
-    //adresse: extractAdresse(text),
+    adresse: extractAdresse(text),
     competences: extractCompetences(text),
     experiences: extractExperiences(text),
     linkedin: extractLinkedIn(text),
@@ -138,5 +124,9 @@ export async function extractCVData(fileBuffer: Buffer, fileName: string): Promi
     langues: extractLangues(text),
   };
 }
-export type { Candidat };
 
+// Fonction pour extraire LinkedIn (exemple basique)
+export function extractLinkedIn(text: string): string | null {
+  const match = text.match(/linkedin\.com\/in\/([a-zA-Z0-9-]+)/);
+  return match ? `linkedin.com/in/${match[1]}` : null;
+}

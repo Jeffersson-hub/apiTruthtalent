@@ -19,7 +19,7 @@ export interface Candidat {
   prenom: string | null;
   email: string | null;
   telephone: string | null;
-  //adresse: string | null;
+  adresse: string | null;
   competences: string[];
   experiences: Experience[];
   linkedin: string | null;
