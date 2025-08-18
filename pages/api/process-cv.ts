@@ -1,7 +1,7 @@
 // api/process-cv.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { processCV } from './parse';
-import { supabase } from './parse';
+import processCV from './parse';
+import supabase from './parse';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
