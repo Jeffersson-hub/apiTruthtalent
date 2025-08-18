@@ -1,25 +1,23 @@
-// test-local.ts
-import dotenv from 'dotenv';
-import path from 'path';
-import { processCV } from './utils/parse'; // Chemin relatif correct
-
-dotenv.config({ path: path.resolve(__dirname, '.env') });
+// test-local.js
+require('dotenv').config({ path: './.env' });
+const { processCV } = require('./utils/parse'); // Chemin vers le fichier compilé
+const fs = require('fs');
+const path = require('path');
 
 console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
 console.log('SUPABASE_SERVICE_ROLE_KEY:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-const filePath = path.join(__dirname, './cv_it.pdf');
+const filePath = path.join(__dirname, './CV Industrie_IT.pdf');
 if (!fs.existsSync(filePath)) {
   console.error('Fichier non trouvé :', filePath);
   process.exit(1);
 }
 
-import fs from 'fs';
 const fileBuffer = fs.readFileSync(filePath);
 
 async function testLocal() {
   try {
-    const result = await processCV(fileBuffer, 'cv_it.pdf');
+    const result = await processCV(fileBuffer, 'CV Industrie_IT.pdf');
     console.log('Succès ! ID du candidat :', result.candidatId);
   } catch (error) {
     console.error('Erreur :', error);

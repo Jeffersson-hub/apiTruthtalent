@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.window", "deno.ns", "esnext"],
+    "types": []
+  },
+  "imports": {
+    "std": "https://deno.land/std@0.177.0/",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.0",
+    "pdfjs-dist": "https://esm.sh/pdfjs-dist@3.4.120/legacy/build/pdf.mjs"
+  }
+}

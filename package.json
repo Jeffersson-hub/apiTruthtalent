@@ -16,12 +16,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "build": "tsc",
+    "start": "next start",
+    "test": "node -r ts-node/register test-local.ts"
   },
   "dependencies": {
     "@supabase/storage-js": "^2.10.4",
-    "@supabase/supabase-js": "^2.55.0",
     "cors": "^2.8.5",
     "docx": "^9.5.1",
     "dotenv": "^17.2.1",
@@ -33,15 +33,16 @@
     "natural": "^8.1.0",
     "next": "^15.4.6",
     "next-connect": "^1.0.0",
+    "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
-    "pdfjs-dist": "^5.4.54",
+    "pdfjs-dist": "^2.16.105",
     "phoenix": "^1.8.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "redux": "^5.0.1",
     "regex": "^6.0.1",
     "tesseract.js": "^6.0.1",
-    "textract": "^2.5.0"
+    "textract": "^0.20.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -57,6 +58,7 @@
     "eslint": "^9.33.0",
     "eslint-config-next": "^15.4.6",
     "eslint-plugin-react": "^7.37.5",
-    "typescript": "5.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
   }
 }

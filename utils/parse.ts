@@ -1,27 +1,51 @@
-// utils/parse.ts
-import { supabase } from './supabaseClient';
-import { Candidat, InsertCandidatResult } from './types';
-import { extractCVData } from './extractCVData';
+// utils/parse.ts@supabase/supabase-js
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
+import { ResumeParser } from './resumeParser';
 
-export async function insertCandidatData(candidat: Candidat): Promise<InsertCandidatResult> {
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+const resumeParser = new ResumeParser();
+
+export async function processCV(fileBuffer: Buffer, fileName: string) {
   try {
+    const fileExtension = fileName.split('.').pop() || '';
+    const extractedText = await resumeParser.extractTextFromFile(fileBuffer, fileExtension);
+
+    const parsedData = {
+      contactInfo: resumeParser.extractContactInfo(extractedText),
+      skills: resumeParser.extractSkills(extractedText),
+      education: resumeParser.extractEducation(extractedText),
+      workExperience: resumeParser.extractWorkExperience(extractedText)
+    };
+
+    const confidenceScore = resumeParser.calculateConfidenceScore(parsedData);
+
+    const { data: { publicUrl } } = supabase
+      .storage
+      .from('truthtalent')
+      .getPublicUrl(`cvs/${fileName}`);
+
     const { data: insertedCandidat, error } = await supabase
       .from('candidats')
-      .insert(candidat)
+      .insert({
+        full_name: parsedData.contactInfo?.email?.split('@')[0],
+        email: parsedData.contactInfo?.email,
+        phone: parsedData.contactInfo?.phone,
+        skills: parsedData.skills,
+        education: parsedData.education,
+        work_experience: parsedData.workExperience,
+        resume_url: publicUrl,
+        confidence_score: confidenceScore
+      })
       .select()
       .single();
 
     if (error) throw error;
-    return { success: true, candidatId: insertedCandidat.id };
-  } catch (error) {
-    return { success: false, error: error as Error };
-  }
-}
 
-export async function processCV(fileBuffer: Buffer, fileName: string): Promise<InsertCandidatResult> {
-  try {
-    const candidat = await extractCVData(fileBuffer, fileName);
-    return await insertCandidatData(candidat);
+    return { success: true, candidatId: insertedCandidat.id };
   } catch (error) {
     return { success: false, error: error as Error };
   }
