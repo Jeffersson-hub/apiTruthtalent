@@ -1,5 +1,5 @@
 // test-local.ts
-import { processCV } from './pages/api/parse';
+import { processCV } from './utils/parse'; 
 import fs from 'fs';
 import path from 'path';
 // test-local.ts
