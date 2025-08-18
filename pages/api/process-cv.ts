@@ -1,7 +1,7 @@
 // api/process-cv.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
-import { processCV, insertCandidatData } from '../../utils/parse'; // Import des fonctions exportées
+import { processCV } from '../../utils/parse'; // Import des fonctions exportées
 
 // Initialisation du client Supabase
 const supabase = createClient(
