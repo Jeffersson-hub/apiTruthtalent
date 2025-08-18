@@ -10,3 +10,6 @@ export function middleware(request: NextRequest) {
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   return response;
 }
+
+// Export par défaut requis par Next.js pour les middlewares
+export default middleware;
