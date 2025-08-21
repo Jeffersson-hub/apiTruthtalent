@@ -1,7 +1,7 @@
 // utils/parse.ts
 
 import { error } from "console";
-import { ResumeParser } from "./resumeParser";
+import { ResumeParser } from "./resumeParser.js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
