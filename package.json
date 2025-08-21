@@ -1,29 +1,20 @@
 {
-  "name": "api-truthtalent",
+  "name": "apitruthtalent",
   "version": "1.0.0",
-  "private": true,
+  "main": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 3000",
-    "build": "next build",
-    "start": "next start -p ${PORT:-3000}",
-    "lint": "next lint"
+    "dev": "ts-node-dev --respawn --transpile-only index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.0",
-    "express": "^5.1.0",
-    "formidable": "^3.5.1",
-    "mammoth": "^1.7.2",
-    "next": "^15.0.0",
-    "pdf-parse": "^1.1.1",
-    "tslib": "^2.7.0",
-    "zod": "^3.23.8"
+    "express": "^4.19.2",
+    "dotenv": "^16.4.5",
+    "@supabase/supabase-js": "^2.44.3"
   },
   "devDependencies": {
-    "@types/express": "^5.0.3",
-    "@types/formidable": "^3.4.5",
-    "@types/node": "^20.11.30",
-    "@types/pdf-parse": "^1.1.4",
-    "typescript": "^5.5.4"
+    "typescript": "^5.4.5",
+    "ts-node-dev": "^2.0.0"
   }
 }
