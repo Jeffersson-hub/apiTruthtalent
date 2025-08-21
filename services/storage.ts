@@ -6,6 +6,10 @@ import { CandidatExtractedData } from "../types/candidats";
 
 const router = express.Router();
 
+export async function uploadToStorage(bucket: string, path: string, buffer: Buffer, mimeType?: string) {
+  // Implémentation ici
+}
+
 router.post("/parse", async (_req: Request, res: Response) => {
   console.log("🚀 Début extraction de tous les fichiers du bucket");
 
@@ -54,7 +58,10 @@ router.post("/parse", async (_req: Request, res: Response) => {
         email: null,
         telephone: null,
         adresse: null,
-        competences: pdfText.text.slice(0, 200)
+        competences: null,
+        liens: undefined,
+        experiences: [],
+        source_fichier: ""
       };
 
       // 5️⃣ Insertion en base

@@ -13,11 +13,16 @@ export interface Competence {
 }
 
 export interface CandidatExtractedData {
-  nom: string | null;
-  prenom: string | null;
+  nom: string;
+  prenom: string;
   email: string | null;
   telephone: string | null;
   adresse: string | null;
-  competences?: Competence[];   // ✅ tableau
-  experiences?: Experience[];
+  liens?: string[];
+  competences: string[] | null;
+  experiences: any[];
+  source_fichier: string;
 }
+
+
+

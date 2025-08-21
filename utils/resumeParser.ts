@@ -2,7 +2,7 @@
 import * as mammoth from 'mammoth';
 import * as natural from 'natural';
 import { Buffer } from 'buffer';
-import { getDocument } from 'pdfjs-dist/legacy/build/pdf.js';
+import { getDocument } from 'pdfjs-dist';
 
 // Désactivez les fonctionnalités qui nécessitent le DOM
 // getDocument.disableWorker = true;
@@ -39,7 +39,12 @@ const pdfParser: FileParser = {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         const pageText = textContent.items
-          .map(item => 'str' in item ? (item as { str: string }).str : '')
+          .map((item) => {
+    if ('str' in item) {
+      return item.str;
+    }
+    return '';
+    })
           .join(' ');
         fullText += pageText + '\n';
       }

@@ -2,6 +2,8 @@
 import express, { Request, Response } from "express";
 import { supabase } from "../../utils/supabaseClient.js";
 import { parseCandidateFromBuffer } from "../../services/documentParser.js";
+import { getDocument } from 'pdfjs-dist';
+import { CandidatExtractedData } from "../../types/candidats.js";
 
 const router = express.Router();
 
@@ -14,17 +16,15 @@ router.post("/parse", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "files[] manquant" });
     }
 
-    const results = [];
-    for (const url of files) {
-      const { buffer, filename } = await fetchToBuffer(url);
-      const parsed = await parseCandidateFromBuffer(filename, buffer, url);
-
-      const { error } = await supabase.from("candidats").insert(parsed as any);
-      if (error) throw error;
-
-      results.push({ url, parsed });
-    }
-
+    
+const results: Array<{ url: string; parsed: CandidatExtractedData }> = [];
+for (const url of files) {
+  const { buffer, filename } = await fetchToBuffer(url);
+  const parsed = await parseCandidateFromBuffer(filename, buffer, url);
+  const { error } = await supabase.from("candidats").insert(parsed as any);
+  if (error) throw error;
+  results.push({ url, parsed });
+}
     return res.status(200).json({ ok: true, results });
   } catch (e: any) {
     console.error(e);
