@@ -12,17 +12,19 @@ export interface Competence {
   niveau?: string;
 }
 
+// types/candidats.ts
 export interface CandidatExtractedData {
-  nom: string;
-  prenom: string;
+  nom: string | null;
+  prenom: string | null;
   email: string | null;
   telephone: string | null;
   adresse: string | null;
-  liens?: string[];
-  competences: string[] | null;
+  competences: string[]; // Assurez-vous que c'est bien un tableau de chaînes de caractères
   experiences: any[];
-  source_fichier: string;
+  liens?: string[];
+  source_fichier?: string | null;
 }
+
 
 
 

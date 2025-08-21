@@ -1,5 +1,5 @@
 // services/documentParser.ts
-import { CandidatExtractedData, Competence, Experience } from "../types/candidats";
+import { CandidatExtractedData, Competence, Experience } from "../types/candidats.js";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse";
 
@@ -16,17 +16,25 @@ function splitName(fulltext: string): { nom: string | null; prenom: string | nul
   return { prenom: m[1] || null, nom: m[2] || null };
 }
 
-function extractCompetences(text: string): Competence[] {
-  // Très simplifié — à adapter à tes listes
-  const TECHS = [
-    "JavaScript","TypeScript","Node","React","Next","PHP","Laravel","Python","Django",
-    "PostgreSQL","MySQL","Supabase","Docker","AWS","GCP","Azure","Kubernetes","Git"
+function extractCompetences(text: string): string[] {
+  // Exemple de logique d'extraction de compétences
+  const skillKeywords = [
+    'JavaScript', 'TypeScript', 'React', 'Node.js', 'Python', 'SQL',
+    'Machine Learning', 'AWS', 'Docker', 'Git', 'Linux', 'Tensorflow',
+    'Agile', 'Scrum', 'UI/UX', 'Marketing', 'Sales'
   ];
-  const lower = text.toLowerCase();
-  return TECHS
-    .filter(t => lower.includes(t.toLowerCase()))
-    .map(n => ({ nom: n }));
+
+  const foundSkills: string[] = [];
+
+  skillKeywords.forEach(skill => {
+    if (text.toLowerCase().includes(skill.toLowerCase())) {
+      foundSkills.push(skill);
+    }
+  });
+
+  return foundSkills;
 }
+
 
 function extractExperiences(text: string): Experience[] {
   // Heuristique minimaliste
@@ -75,7 +83,8 @@ export async function parseCandidateFromBuffer(filename: string, buffer: Buffer,
   const experiences = extractExperiences(text);
 
   return {
-    nom, prenom,
+    nom,
+    prenom,
     email,
     telephone: phone,
     adresse: null,
