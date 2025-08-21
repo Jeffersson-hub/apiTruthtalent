@@ -6,7 +6,7 @@ import { processCV } from './utils/parse'; // Chemin relatif correct
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
-console.log('SUPABASE_SERVICE_ROLE_KEY:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+console.log('SUPABASE_ANON_KEY:', !!process.env.SUPABASE_ANON_KEY);
 
 const filePath = path.join(__dirname, './cv_it.pdf');
 if (!fs.existsSync(filePath)) {
