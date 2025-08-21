@@ -1,8 +1,8 @@
 // pages/api/analyze-cv.ts
 import type { NextApiRequest, NextApiResponse } from "next";
-import { downloadFromStorage } from "../../services/storage.js";
-import { parseCandidateFromBuffer } from "../../services/documentParser.js";
-import { supabase } from "../../utils/supabaseClient.js";
+import { downloadFromStorage } from "../../services/storage";
+import { parseCandidateFromBuffer } from "../../services/documentParser";
+import { supabase } from "../../utils/supabaseClient";
 
 export default async function handler(
   req: NextApiRequest,

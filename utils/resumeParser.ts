@@ -1,6 +1,5 @@
 // utils/resumeParser.ts
 import * as mammoth from 'mammoth';
-import natural from 'natural';
 import { Buffer } from 'buffer';
 import { getDocument } from 'pdfjs-dist';
 

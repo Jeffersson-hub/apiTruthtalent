@@ -1,5 +1,5 @@
 // services/documentParser.ts
-import { CandidatExtractedData, Competence, Experience } from "../types/candidats.js";
+import { CandidatExtractedData, Competence, Experience } from "../types/candidats";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse";
 

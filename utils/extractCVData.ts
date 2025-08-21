@@ -1,5 +1,5 @@
 // utils/extractCVData.ts
-import { Candidat, Experience, Formation, Langue } from './types.js'; // Assurez-vous que les interfaces sont définies dans `types.ts`
+import { Candidat, Experience, Formation, Langue } from './types'; // Assurez-vous que les interfaces sont définies dans `types.ts`
 
 // Fonction pour extraire les formations
 export function extractFormations(text: string): Formation[] {

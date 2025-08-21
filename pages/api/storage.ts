@@ -1,6 +1,6 @@
 // pages/api/storage.ts
 import express, { Request, Response } from "express";
-import { supabase } from "../../utils/supabaseClient.js";
+import { supabase } from "../../utils/supabaseClient";
 
 const router = express.Router();
 

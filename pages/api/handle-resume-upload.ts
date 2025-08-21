@@ -3,9 +3,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable, { IncomingForm } from 'formidable';
 const form = new IncomingForm();
 
-import { uploadToStorage } from "../../services/storage.js";
-import { parseCandidateFromBuffer } from "../../services/documentParser.js";
-import { supabase } from "../../utils/supabaseClient.js";
+import { uploadToStorage } from "../../services/storage";
+import { parseCandidateFromBuffer } from "../../services/documentParser";
+import { supabase } from "../../utils/supabaseClient";
 import fs from 'fs';
 
 export const config = { api: { bodyParser: false } };

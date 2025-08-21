@@ -1,6 +1,6 @@
 // pages/api/list-cv.ts
 import express, { Request, Response } from "express";
-import { supabase } from "../../utils/supabaseClient.js";
+import { supabase } from "../../utils/supabaseClient";
 
 
 const router = express.Router();

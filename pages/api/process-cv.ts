@@ -1,9 +1,8 @@
 // pages/api/process-cv.ts
 import express, { Request, Response } from "express";
-import { supabase } from "../../utils/supabaseClient.js";
-import { parseCandidateFromBuffer } from "../../services/documentParser.js";
-import { getDocument } from 'pdfjs-dist';
-import { CandidatExtractedData } from "../../types/candidats.js";
+import { supabase } from "../../utils/supabaseClient";
+import { parseCandidateFromBuffer } from "../../services/documentParser";
+import { CandidatExtractedData } from "../../types/candidats";
 
 const router = express.Router();
 
