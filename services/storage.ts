@@ -1,8 +1,8 @@
 // services/storage.ts
 import express, { Request, Response } from "express";
-import { supabase } from "../utils/supabase";
+import { supabase } from "../utils/supabase.js";
 import pdfParse from "pdf-parse";
-import { CandidatExtractedData } from "../types/candidats";
+import { CandidatExtractedData } from "../types/candidats.js";
 
 const router = express.Router();
 

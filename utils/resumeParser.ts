@@ -1,6 +1,6 @@
 // utils/resumeParser.ts
 import * as mammoth from 'mammoth';
-import * as natural from 'natural';
+import natural from 'natural';
 import { Buffer } from 'buffer';
 import { getDocument } from 'pdfjs-dist';
 
@@ -39,13 +39,14 @@ const pdfParser: FileParser = {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         const pageText = textContent.items
-          .map((item) => {
-    if ('str' in item) {
-      return item.str;
-    }
-    return '';
-    })
-          .join(' ');
+        .map((item: any) => {
+          if ('str' in item) {
+            return item.str;
+          }
+          return '';
+        })
+        .join(' ');
+
         fullText += pageText + '\n';
       }
       return fullText;
@@ -78,8 +79,8 @@ const fileParsers: FileParser[] = [pdfParser, docxParser, txtParser];
 
 // Classe ResumeParser
 export class ResumeParser {
-  private tokenizer = new natural.WordTokenizer();
-  private stemmer = natural.PorterStemmer;
+  [x: string]: any;
+
 
   // Extraction des compétences
   extractSkills(text: string): string[] {
