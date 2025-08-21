@@ -7,7 +7,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!, 
+    const supabaseUrl = process.env.SUPABASE_URL!; 
     Deno.env.get('SUPABASE_ANON_KEY')!
   );
 

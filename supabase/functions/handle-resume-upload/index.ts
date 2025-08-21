@@ -3,8 +3,8 @@ import { createClient } from 'npm:@supabase/supabase-js';
 Deno.serve(async (req: Request) => {
   // Créer un client Supabase
   const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!, 
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabaseUrl = process.env.SUPABASE_URL!;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   );
 
   // Données de test

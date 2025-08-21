@@ -1,29 +1,23 @@
 // pages/api/list-cv.ts
-import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../utils/supabase';
+import express, { Request, Response } from "express";
+import { supabase } from "../../utils/supabaseClient.js";
 
 
-interface Candidat {
-  id: string;
-  nom: string | null;
-  email: string | null;
-  // Ajoutez d'autres champs si nécessaire
-}
+const router = express.Router();
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<Candidat[] | { error: string }>
-) {
+router.post("/parse", async (req: Request, res: Response) => {
   try {
-    const { data: candidats, error } = await supabase
-      .from('candidats')
-      .select('id, nom, email');
-
+    const { data, error } = await supabase
+      .from("candidats")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
     if (error) throw error;
-
-    res.status(200).json(candidats || []);
-  } catch (err) {
-    console.error('Failed to fetch CVs:', err); 
-    res.status(500).json({ error: 'Failed to fetch CVs' });
+    return res.status(200).json({ ok: true, data });
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ error: e.message || "Erreur serveur" });
   }
-}
+});
+
+export default router;

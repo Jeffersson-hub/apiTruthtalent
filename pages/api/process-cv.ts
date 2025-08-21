@@ -1,43 +1,48 @@
-// api/process-cv.ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
-import { processCV } from '../../utils/parse';
+// pages/api/process-cv.ts
+import express, { Request, Response } from "express";
+import { supabase } from "../../utils/supabaseClient.js";
+import { parseCandidateFromBuffer } from "../../services/documentParser.js";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
+const router = express.Router();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
+router.post("/parse", async (req: Request, res: Response) => {
   try {
-    const { fileName, bucketName } = req.body;
+    if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-    if (!fileName || !bucketName) {
-      return res.status(400).json({ error: 'fileName and bucketName are required' });
+    const { files } = req.body || {};
+    if (!Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({ error: "files[] manquant" });
     }
 
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from(bucketName)
-      .download(`cvs/${fileName}`);
+    const results = [];
+    for (const url of files) {
+      const { buffer, filename } = await fetchToBuffer(url);
+      const parsed = await parseCandidateFromBuffer(filename, buffer, url);
 
-    if (downloadError || !fileData) {
-      return res.status(500).json({ error: `Failed to download file: ${downloadError?.message}` });
+      const { error } = await supabase.from("candidats").insert(parsed as any);
+      if (error) throw error;
+
+      results.push({ url, parsed });
     }
 
-    const fileBuffer = Uint8Array.from(await fileData.arrayBuffer());
-    const result = await processCV(fileBuffer, fileName);
-
-    if (!result.success) {
-      return res.status(500).json({ error: result.error?.message });
-    }
-
-    return res.status(200).json({ success: true, candidatId: result.candidatId });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return res.status(500).json({ error: errorMessage });
+    return res.status(200).json({ ok: true, results });
+  } catch (e: any) {
+    console.error(e);
+    return res.status(500).json({ error: e.message || "Erreur serveur" });
   }
-}
+},
+
+async function fetchToBuffer(url: string): Promise<{ buffer: Buffer; filename: string }> {
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`Download failed: ${resp.status} ${resp.statusText}`);
+  const arr = await resp.arrayBuffer();
+  const buffer = Buffer.from(arr);
+  const filename = url.split("?")[0].split("/").pop() || "cv.bin";
+  return { buffer, filename };
+})
+
+function fetchToBuffer(url: any): { buffer: any; filename: any; } | PromiseLike<{ buffer: any; filename: any; }> {
+  throw new Error("Function not implemented.");
+};
+
+export default router;
