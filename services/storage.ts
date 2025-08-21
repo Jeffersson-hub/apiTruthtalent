@@ -86,5 +86,17 @@ router.post("/parse", async (_req: Request, res: Response) => {
     details: results,
   });
 });
+// Ajoutez cette fonction si elle n'existe pas
+export async function downloadFromStorage(bucket: string, path: string): Promise<Buffer> {
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .download(path);
+
+  if (error || !data) {
+    throw new Error(`Erreur lors du téléchargement de ${path}: ${error?.message}`);
+  }
+
+  return Buffer.from(await data.arrayBuffer());
+}
 
 export default router;
