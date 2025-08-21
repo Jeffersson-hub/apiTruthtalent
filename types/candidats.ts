@@ -19,7 +19,7 @@ export interface CandidatExtractedData {
   email: string | null;
   telephone: string | null;
   adresse: string | null;
-  competences: string[]; // Assurez-vous que c'est bien un tableau de chaînes de caractères
+  competences: any[]; // Assurez-vous que c'est bien un tableau de chaînes de caractères
   experiences: any[];
   liens?: string[];
   source_fichier?: string | null;
