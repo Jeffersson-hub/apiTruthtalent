@@ -13,7 +13,7 @@ export interface Competence {
 }
 
 // types/candidats.ts
-export interface CandidatExtractedData {
+export interface Candidat {
   nom: string | null;
   prenom: string | null;
   email: string | null;

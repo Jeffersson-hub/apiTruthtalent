@@ -1,8 +1,8 @@
 // services/storage.ts
 import express, { Request, Response } from "express";
-import { supabase } from "../utils/supabase";
+import { supabase } from "../utils/supabase.js";
 import pdfParse from "pdf-parse";
-import { CandidatExtractedData } from "../types/candidats";
+import { Candidat} from "../types/candidats.js";
 
 const router = express.Router();
 
@@ -52,7 +52,7 @@ router.post("/parse", async (_req: Request, res: Response) => {
       console.log(`📄 ${file.name} extrait (200 premiers chars):`, pdfText.text.slice(0, 200));
 
       // 4️⃣ Construire les données
-      const candidat: CandidatExtractedData = {
+      const candidat: Candidat = {
         nom: "Inconnu",
         prenom: "Inconnu",
         email: null,

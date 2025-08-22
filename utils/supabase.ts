@@ -1,6 +1,13 @@
 // utils/supabase.ts
 import { createClient } from "@supabase/supabase-js";
 
+//javascript
+/*export const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!
+);
+*/
+// typescript
 const supabaseUrl = process.env.SUPABASE_URL as string;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
 

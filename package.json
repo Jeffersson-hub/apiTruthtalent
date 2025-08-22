@@ -4,8 +4,10 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "NEXT_IGNORE_ESLINT=1 next build",
-    "start": "next start"
+    "build": "tsc && next build",
+    "start": "next start",
+    "tsc": "tsc -p tsconfig.json",
+    "upload-cv": "tsc && node dist/scripts/uploadCV.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.44.3",
@@ -23,10 +25,10 @@
     "pdfjs-dist": "^5.4.54"
   },
   "devDependencies": {
+    "@swc/core": "^1.13.4",
     "@types/express": "^5.0.3",
-    "@types/node": "^24.3.0",
-    "eslint": "^9.33.0",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.4.5"
+    "@types/node": "^22.17.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2"
   }
 }
