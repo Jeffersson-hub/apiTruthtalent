@@ -1,37 +1,64 @@
-// utils/parse.ts
+import { supabase } from './supabaseClient';
+import { extractCVData } from './extractCVData';
+import { Buffer } from 'buffer';
 
-import { error } from "console";
-import { ResumeParser } from "./resumeParser";
+export async function parseAllCVs() {
+  // 1️⃣ Lister les fichiers dans le bucket
+  const { data: files, error: listError } = await supabase.storage
+    .from('truthtalent')
+    .list('cvs');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
-);
+  if (listError) {
+    console.error('Erreur liste fichiers:', listError);
+    return;
+  }
 
-const resumeParser = new ResumeParser();
+  if (!files || files.length === 0) {
+    console.log('Aucun fichier trouvé dans le bucket.');
+    return;
+  }
 
-export async function parseCV(fileBuffer: Buffer, fileName: string) {
-  try {
-    const fileExtension = fileName.split('.').pop() || '';
-    const extractedText = await resumeParser.extractTextFromFile(fileBuffer, fileExtension);
+  // Boucle sur chaque fichier
+  for (const file of files) {
+    try {
+      // Télécharger le fichier
+      const { data: fileBlob, error: downloadError } = await supabase.storage
+        .from('truthtalent')
+        .download(`cvs/${file.name}`);
 
-    const parsedData = {
-      contactInfo: resumeParser.extractContactInfo(extractedText),
-      skills: resumeParser.extractSkills(extractedText),
-      education: resumeParser.extractEducation(extractedText),
-      workExperience: resumeParser.extractWorkExperience(extractedText)
-    };
+      if (downloadError || !fileBlob) {
+        console.error('Erreur téléchargement fichier:', file.name, downloadError);
+        continue;
+      }
 
-    const confidenceScore = resumeParser.calculateConfidenceScore(parsedData);
+      // Convertir Blob -> Buffer
+      const buffer = Buffer.from(await fileBlob.arrayBuffer());
 
-    if (error) throw error;
+      // Extraire les données du CV
+      const candidatData = await extractCVData(buffer, file.name);
 
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: error as Error };
+      console.log('Données extraites pour', file.name, candidatData);
+
+      // Insérer dans la table candidats
+      const { data: inserted, error: insertError } = await supabase
+        .from('candidats')
+        .insert([candidatData]);
+
+      if (insertError) {
+        console.error('Erreur insertion candidat:', insertError);
+      } else {
+        console.log('Candidat inséré:', inserted);
+      }
+
+    } catch (err) {
+      console.error('Erreur traitement fichier:', file.name, err);
+    }
   }
 }
-function createClient(arg0: string, arg1: string) {
-  throw new Error("Function not implemented.");
-}
 
+// Si on exécute le fichier directement
+if (require.main === module) {
+  parseAllCVs()
+    .then(() => console.log('Analyse terminée'))
+    .catch(err => console.error('Erreur globale:', err));
+}

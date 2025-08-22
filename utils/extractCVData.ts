@@ -1,5 +1,9 @@
 // utils/extractCVData.ts
+import { supabase } from './supabaseClient';
 import { Candidat, Experience, Formation, Langue } from './types'; // Assurez-vous que les interfaces sont définies dans `types.ts`
+
+// Ensuite tu passes `fileBuffer` à ton extracteur
+// const candidatData = await extractCVData(fileBuffer, fileName);
 
 // Fonction pour extraire les formations
 export function extractFormations(text: string): Formation[] {
