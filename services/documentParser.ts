@@ -1,5 +1,5 @@
 // services/documentParser.ts
-import { CandidatExtractedData, Competence, Experience } from "../types/candidats";
+import { Candidat, Competence, Experience } from "../types/candidats";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse";
 
@@ -71,7 +71,7 @@ export async function extractTextFromBuffer(filename: string, buffer: Buffer): P
   return buffer.toString("utf8");
 }
 
-export async function parseCandidateFromBuffer(filename: string, buffer: Buffer, sourcePath?: string | null): Promise<CandidatExtractedData> {
+export async function parseCandidateFromBuffer(filename: string, buffer: Buffer, sourcePath?: string | null): Promise<Candidat> {
   const text = await extractTextFromBuffer(filename, buffer);
 
   const email = (text.match(emailRegex) || [null])[0];

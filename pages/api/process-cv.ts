@@ -2,7 +2,7 @@
 import express, { Request, Response } from "express";
 import { supabase } from "../../utils/supabaseClient";
 import { parseCandidateFromBuffer } from "../../services/documentParser";
-import { CandidatExtractedData } from "../../types/candidats";
+import { Candidat } from "../../types/candidats";
 
 const router = express.Router();
 
@@ -16,7 +16,7 @@ router.post("/parse", async (req: Request, res: Response) => {
     }
 
     
-const results: Array<{ url: string; parsed: CandidatExtractedData }> = [];
+const results: Array<{ url: string; parsed: Candidat }> = [];
 for (const url of files) {
   const { buffer, filename } = await fetchToBuffer(url);
   const parsed = await parseCandidateFromBuffer(filename, buffer, url);
