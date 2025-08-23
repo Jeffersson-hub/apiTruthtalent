@@ -1,30 +1,28 @@
-// types/candidats.ts
+export interface Formation {
+  raw: string;        // jamais null
+}
+
+export interface Langue {
+  langue: string;     // jamais null
+  niveau: string;     // jamais null
+}
 
 export interface Experience {
   poste: string;
   entreprise: string;
-  debut: string;
-  fin: string;
+  periode?: string | null;
+  description?: string | null;
 }
 
-export interface Competence {
-  nom: string;
-  niveau?: string;
-}
-
-// types/candidats.ts
 export interface Candidat {
   nom: string | null;
   prenom: string | null;
   email: string | null;
   telephone: string | null;
   adresse: string | null;
-  competences: any[]; // Assurez-vous que c'est bien un tableau de chaînes de caractères
-  experiences: any[];
-  liens?: string[];
-  source_fichier?: string | null;
+  competences: string[];
+  experiences: Experience[];
+  linkedin?: string | null;
+  formations: Formation[];
+  langues: Langue[];
 }
-
-
-
-

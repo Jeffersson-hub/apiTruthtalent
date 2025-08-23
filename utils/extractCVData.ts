@@ -1,6 +1,6 @@
 // utils/extractCVData.ts
-import { supabase } from './supabaseClient';
-import { Candidat, Experience, Formation, Langue } from './types'; // Assurez-vous que les interfaces sont définies dans `types.ts`
+import { Candidat, Formation, Langue, Experience } from '../types/candidats';
+
 
 // Ensuite tu passes `fileBuffer` à ton extracteur
 // const candidatData = await extractCVData(fileBuffer, fileName);
@@ -79,11 +79,10 @@ export function extractCompetences(text: string): string[] {
   return competencesSection[1].split(',').map(c => c.trim()).filter(c => c.length > 0);
 }
 
-// Fonction pour extraire les expériences (déjà implémentée)
 export function extractExperiences(text: string): Experience[] {
   const experienceRegex = /(?:expérience|poste|emploi)[\s\S]*?([A-Z][a-zA-Z\s]+?)\s*(?:chez|@|-)\s*([A-Z][a-zA-Z\s]+?)\s*(?:\(?([\d\-\s]+?)\)?)/g;
   const experiences: Experience[] = [];
-  let match;
+  let match: RegExpExecArray | null;
 
   while ((match = experienceRegex.exec(text)) !== null) {
     experiences.push({
@@ -96,6 +95,7 @@ export function extractExperiences(text: string): Experience[] {
 
   return experiences;
 }
+
 
 // Fonction pour extraire le texte depuis le buffer
 export async function extractTextFromBuffer(fileBuffer: Buffer, fileName: string): Promise<string> {
@@ -112,22 +112,23 @@ export async function extractTextFromBuffer(fileBuffer: Buffer, fileName: string
   }
 }
 
-// Fonction principale pour extraire les données du CV
 export async function extractCVData(fileBuffer: Buffer, fileName: string): Promise<Candidat> {
   const text = await extractTextFromBuffer(fileBuffer, fileName);
+
   return {
     nom: extractNom(text),
     prenom: extractPrenom(text),
     email: extractEmail(text),
     telephone: extractTelephone(text),
     adresse: extractAdresse(text),
-    competences: extractCompetences(text),
-    experiences: extractExperiences(text),
+    competences: extractCompetences(text) || [],       // jamais null
+    experiences: extractExperiences(text) || [],       // jamais null
     linkedin: extractLinkedIn(text),
-    formations: extractFormations(text),
-    langues: extractLangues(text),
+    formations: extractFormations(text) || [],         // jamais null
+    langues: extractLangues(text) || [],               // jamais null
   };
 }
+
 
 // Fonction pour extraire LinkedIn (exemple basique)
 export function extractLinkedIn(text: string): string | null {
