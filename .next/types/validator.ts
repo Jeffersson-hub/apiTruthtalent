@@ -25,33 +25,21 @@ type ApiRouteConfig = {
 
 
 
-// Validate ../../pages/api/analyze-cv.ts
+// Validate ../../pages/api/candidats.ts
 {
-  const handler = {} as typeof import("../../pages/api/analyze-cv.js")
+  const handler = {} as typeof import("../../pages/api/candidats.js")
   handler satisfies ApiRouteConfig
 }
 
-// Validate ../../pages/api/handle-resume-upload.ts
+// Validate ../../pages/api/parse.ts
 {
-  const handler = {} as typeof import("../../pages/api/handle-resume-upload.js")
+  const handler = {} as typeof import("../../pages/api/parse.js")
   handler satisfies ApiRouteConfig
 }
 
-// Validate ../../pages/api/list-cv.ts
+// Validate ../../pages/api/upload.ts
 {
-  const handler = {} as typeof import("../../pages/api/list-cv.js")
-  handler satisfies ApiRouteConfig
-}
-
-// Validate ../../pages/api/process-cv.ts
-{
-  const handler = {} as typeof import("../../pages/api/process-cv.js")
-  handler satisfies ApiRouteConfig
-}
-
-// Validate ../../pages/api/storage.ts
-{
-  const handler = {} as typeof import("../../pages/api/storage.js")
+  const handler = {} as typeof import("../../pages/api/upload.js")
   handler satisfies ApiRouteConfig
 }
 
