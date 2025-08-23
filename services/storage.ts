@@ -59,9 +59,9 @@ router.post("/parse", async (_req: Request, res: Response) => {
         telephone: null,
         adresse: null,
         competences: [],
-        liens: undefined,
         experiences: [],
-        source_fichier: ""
+        formations: [],
+        langues: []
       };
 
       // 5️⃣ Insertion en base
