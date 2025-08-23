@@ -17,5 +17,5 @@ app.use("/api/job-status", jobStatusRouter);
 app.use("/api/candidats", candidatsRouter);
 
 app.listen(PORT, () => {
-  console.log(`🚀 API TruthTalent running on http://localhost:${PORT}`);
+  console.log(`🚀 API TruthTalent running on render:${PORT}`);
 });
