@@ -1,5 +1,5 @@
 // services/documentParser.ts
-import { Candidat, Competence, Experience } from "../types/candidats";
+import { Candidat, Experience } from "../types/candidats";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse";
 
@@ -90,5 +90,7 @@ export async function parseCandidateFromBuffer(filename: string, buffer: Buffer,
     adresse: null,
     competences,
     experiences,
+    formations: [], // Valeur par défaut
+    langues: [],  
   };
 }

@@ -90,6 +90,8 @@ export function extractExperiences(text: string): Experience[] {
       entreprise: match[2].trim(),
       periode: match[3] ? match[3].trim() : null,
       description: null,
+      debut: '',
+      fin: ''
     });
   }
 

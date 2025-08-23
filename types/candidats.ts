@@ -12,6 +12,8 @@ export interface Experience {
   entreprise: string;
   periode?: string | null;
   description?: string | null;
+  debut: string;
+  fin: string;
 }
 
 export interface Candidat {
