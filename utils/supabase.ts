@@ -1,13 +1,9 @@
 // utils/supabase.ts
 import { createClient } from "@supabase/supabase-js";
+import dotenv from "dotenv";
 
-//javascript
-/*export const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_KEY!
-);
-*/
-// typescript
+dotenv.config();
+
 const supabaseUrl = process.env.SUPABASE_URL as string;
 const supabaseKey = process.env.SUPABASE_ANON_KEY as string;
 

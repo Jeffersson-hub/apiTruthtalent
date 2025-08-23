@@ -1,31 +1,29 @@
 {
   "name": "apitruthtalent",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "tsc && next build",
-    "start": "next start",
-    "tsc": "tsc -p tsconfig.json",
-    "upload-cv": "tsc && node dist/scripts/uploadCV.js"
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node index.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.44.3",
     "@types/formidable": "^3.4.5",
     "@types/natural": "^5.1.5",
-    "@types/next": "^8.0.7",
     "@types/pdfjs-dist": "^2.10.377",
-    "dotenv": "^16.4.5",
+    "body-parser": "^1.20.2",
+    "buffer": "^6.0.3",
+    "dotenv": "^16.6.1",
     "express": "^4.19.2",
     "formidable": "^3.5.4",
     "mammoth": "^1.10.0",
     "natural": "^8.1.0",
-    "next": "^15.5.0",
     "pdf-parse": "^1.1.1",
     "pdfjs-dist": "^5.4.54"
   },
   "devDependencies": {
     "@swc/core": "^1.13.4",
+    "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.3",
     "@types/node": "^22.17.2",
     "ts-node": "^10.9.2",

@@ -2,9 +2,8 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import { supabase } from "../utils/supabase";
-import { Candidat } from "../types/candidats";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.resolve();
 
 async function main() {
   const filePath = path.join(__dirname, "../cvs/mon-cv.pdf");
