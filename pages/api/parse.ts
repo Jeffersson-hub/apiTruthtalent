@@ -32,6 +32,11 @@ export default async function handler(
 
     if (dbError) {
       return res.status(500).json({ error: dbError.message });
+      console.log('Fichier en cours :', path);
+console.log('Nom de fichier détecté :', buffer);
+console.log('Extraction CV :', extracted);
+
+
     }
 
     results.push({ path, extracted });
