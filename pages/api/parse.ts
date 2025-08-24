@@ -1,5 +1,4 @@
 // pages/api/parse.ts
-// 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../utils/supabase';
 import { extractCVData } from '../../utils/extractCVData';
@@ -9,29 +8,65 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { files } = req.body; // tableau de paths Supabase
-  
-  const results: { path: string; extracted?: Candidat; error?: string }[] = [];
-for (const path of files) {
-    try {
-        const { data, error: downloadError } = await supabase.storage.from('truthtalent').download(path);
+  console.log("👉 /api/parse hit", req.method);
+
+  try {
+    // 1️⃣ Lister les fichiers du bucket
+    const { data: files, error: listError } = await supabase
+      .storage
+      .from('truthtalent')
+      .list();
+
+    if (listError) {
+      console.error('❌ Erreur listage bucket:', listError);
+      return res.status(500).json({ error: 'Erreur listage bucket', details: listError });
+    }
+
+    console.log(`📂 ${files.length} fichiers trouvés dans le bucket.`);
+
+    const results: { path: string; extracted?: Candidat; error?: string }[] = [];
+
+    // 2️⃣ Traiter chaque fichier
+    for (const file of files) {
+      try {
+        console.log('⬇️ Téléchargement du fichier :', file.name);
+        const { data, error: downloadError } = await supabase
+          .storage
+          .from('truthtalent')
+          .download(file.name);
+
         if (downloadError) throw new Error(downloadError.message);
+        if (!data) throw new Error('Fichier vide ou non accessible');
 
         const buffer = Buffer.from(await data.arrayBuffer());
-        console.log('Fichier en cours :', path); // Log avant extraction
-        const extracted = await extractCVData(buffer, path);
-        console.log('Extraction CV :', extracted); // Log après extraction
 
-        const { error: dbError } = await supabase.from('candidats').insert([extracted]).select();
+        // 3️⃣ Extraire les données
+        console.log('🧾 Extraction CV :', file.name);
+        const extracted = await extractCVData(buffer, file.name);
+        console.log('🧠 Données extraites :', extracted);
+
+        // 4️⃣ Insérer en base
+        const { data: dbData, error: dbError } = await supabase
+          .from('candidats')
+          .insert([extracted])
+          .select();
+
         if (dbError) throw new Error(dbError.message);
 
-        results.push({ path, extracted });
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-    console.error('Erreur pour', path, ':', errorMessage);
-    results.push({ path, error: errorMessage });
-    }
-}
+        console.log('✅ Insert OK :', dbData);
 
-  res.status(200).json({ message: 'CV analysés et insérés', results });
+        results.push({ path: file.name, extracted });
+      } catch (error) {
+        const errMsg = error instanceof Error ? error.message : 'Erreur inconnue';
+        console.error('❌ Erreur pour', file.name, ':', errMsg);
+        results.push({ path: file.name, error: errMsg });
+      }
+    }
+
+    return res.status(200).json({ message: 'CV analysés et insérés', results });
+  } catch (e) {
+    const err = e instanceof Error ? e.message : 'Erreur inconnue';
+    console.error('💥 Erreur globale /api/parse:', err);
+    return res.status(500).json({ error: err });
+  }
 }

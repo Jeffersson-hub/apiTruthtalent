@@ -8,8 +8,8 @@ export interface Langue {
 }
 
 export interface Experience {
-  poste: string;
-  entreprise: string;
+  poste: string | null;
+  entreprise: string | null;
   periode?: string | null;
   description?: string | null;
   debut: string;
@@ -19,7 +19,9 @@ export interface Experience {
 export interface Candidat {
   nom: string | null;
   prenom: string | null;
+  poste: string | null;
   email: string | null;
+   entreprise: string | null;
   telephone: string | null;
   adresse: string | null;
   competences: string[];

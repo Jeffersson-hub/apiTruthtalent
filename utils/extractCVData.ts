@@ -1,104 +1,120 @@
 // utils/extractCVData.ts
 import { Candidat, Formation, Langue, Experience } from '../types/candidats';
 
-// Ensuite tu passes `fileBuffer` à ton extracteur
-// const candidatData = await extractCVData(fileBuffer, fileName);
+/**
+ * Nom et prénom
+ * Supporte : "Jean Dupont" ou "DUPONT Jean"
+ */
+export function extractNomPrenom(text: string): { nom: string | null; prenom: string | null } {
+  // Jean Dupont
+  let match = text.match(/^([A-ZÉ][a-zéàè]+(?:[-\s][A-ZÉa-zéàè]+)?)\s+([A-Z][A-Za-zéàè]+)/m);
+  if (match) return { prenom: match[1], nom: match[2] };
 
-// Fonction pour extraire les formations
-export function extractFormations(text: string): Formation[] {
-  // Regex pour capturer les sections "Formation", "Diplôme", "Études", etc.
-  const formationRegex = /(?:formation|diplôme|études?|licence|master|bac[+\s]?[0-9]*)\s*:?\s*([^\n]+?)(?=\n|$)/gi;
-  const formations: Formation[] = [];
-  let match;
+  // DUPONT Jean
+  match = text.match(/^([A-ZÉ]{2,})\s+([A-ZÉ][a-zéàè]+)/m);
+  if (match) return { nom: match[1], prenom: match[2] };
 
-  while ((match = formationRegex.exec(text)) !== null) {
-    const formationText = match[1].trim();
-    if (formationText) {
-      formations.push({ raw: formationText });
-    }
-  }
-
-  return formations;
+  return { nom: null, prenom: null };
 }
 
-// Fonction pour extraire les langues et leurs niveaux
-export function extractLangues(text: string): Langue[] {
-  // Regex pour capturer les langues (ex: "Anglais : Courant", "Espagnol - B2")
-  const langueRegex = /([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s*(?:[:-\u2013]\s*)([A-Za-z0-9\s-]+)/g;
-  const langues: Langue[] = [];
-  let match;
-
-  while ((match = langueRegex.exec(text)) !== null) {
-    const langue = match[1].trim();
-    const niveau = match[2].trim();
-    if (langue && niveau) {
-      langues.push({ langue, niveau });
-    }
-  }
-
-  return langues;
-}
-
-// Fonction pour extraire le prénom
-export function extractPrenom(text: string): string | null {
-  // Regex pour capturer le prénom (ex: "Jean DUPONT" -> "Jean")
-  const match = text.match(/^\s*([A-Z][a-zA-Z]+)\s+[A-Z][a-zA-Z]+/);
-  return match ? match[1] : null;
-}
-
-// Fonction pour extraire le téléphone (déjà implémentée)
+/**
+ * Téléphone français
+ */
 export function extractTelephone(text: string): string | null {
-  const match = text.match(/(\+?\d{2,3}[-\s]?\d{2,3}[-\s]?\d{2,3}[-\s]?\d{2,3})/);
-  return match ? match[0] : null;
+  const match = text.match(/(\+33\s?|0)[1-9](?:[\s.-]?\d{2}){4}/);
+  return match ? match[0].replace(/\s/g, '') : null;
 }
 
-// Fonction pour extraire l'adresse
-export function extractAdresse(text: string): string | null {
-  // Regex pour capturer une adresse (ex: "123 Rue de Paris, 75000 Paris")
-  const match = text.match(/\d+\s+[A-Za-z\s]+,\s*\d{5}\s+[A-Za-z\s]+/);
-  return match ? match[0] : null;
-}
-
-// Fonction pour extraire le nom (déjà implémentée)
-export function extractNom(text: string): string | null {
-  const match = text.match(/([A-Z][a-zA-Z]+)\s+([A-Z][a-zA-Z]+)/);
-  return match ? match[0] : null;
-}
-
-// Fonction pour extraire l'email (déjà implémentée)
+/**
+ * Email
+ */
 export function extractEmail(text: string): string | null {
-  const match = text.match(/\S+@\S+/);
+  const match = text.match(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i);
   return match ? match[0] : null;
 }
 
-// Fonction pour extraire les compétences (déjà implémentée)
-export function extractCompetences(text: string): string[] {
-  const competencesSection = text.match(/compétences?:([\s\S]*?)(?=\n\w+:|$)/i);
-  if (!competencesSection) return [];
-  return competencesSection[1].split(',').map(c => c.trim()).filter(c => c.length > 0);
+/**
+ * Poste
+ */
+export function extractPoste(text: string): string | null {
+  const match = text.match(/^([A-ZÉ][a-zéàè]+(?:[-\s][A-ZÉa-zéàè]+)?)\s+([A-Z][A-Za-zéàè]+)/m);
+  return match ? match[0] : null;
 }
 
-export function extractExperiences(text: string): Experience[] {
-  const experienceRegex = /(?:expérience|poste|emploi)[\s\S]*?([A-Z][a-zA-Z\s]+?)\s*(?:chez|@|-)\s*([A-Z][a-zA-Z\s]+?)\s*(?:\(?([\d\-\s]+?)\)?)/g;
-  const experiences: Experience[] = [];
-  let match: RegExpExecArray | null;
+/**
+ * entreprise
+ */
+export function extractEntreprise(text: string): string | null {
+  const match = text.match(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i);
+  return match ? match[0] : null;
+}
 
-  while ((match = experienceRegex.exec(text)) !== null) {
+/**
+ * LinkedIn
+ */
+export function extractLinkedIn(text: string): string | null {
+  const match = text.match(/linkedin\.com\/in\/([a-zA-Z0-9-]+)/i);
+  return match ? `linkedin.com/in/${match[1]}` : null;
+}
+
+/**
+ * Compétences
+ */
+export function extractCompetences(text: string): string[] {
+  const match = text.match(/compétences?\s*[:\-]\s*([\s\S]*?)(?=\n\S+:|$)/i);
+  if (!match) return [];
+  return match[1].split(/,|;/).map(c => c.trim()).filter(c => c.length > 0);
+}
+
+/**
+ * Expériences
+ */
+export function extractExperiences(text: string): Experience[] {
+  const regex = /(?:expérience|poste|emploi|stage)\s*[:\-]?\s*([^\n]+)\s+(?:chez|@|-)\s*([^\n]+)\s*(?:\(([^)]+)\))?/gi;
+  const experiences: Experience[] = [];
+  let m;
+  while ((m = regex.exec(text)) !== null) {
     experiences.push({
-      poste: match[1].trim(),
-      entreprise: match[2].trim(),
-      periode: match[3] ? match[3].trim() : null,
+      poste: null,
+      entreprise: m[2]?.trim() || null,
+      periode: m[3]?.trim() || null,
       description: null,
       debut: '',
       fin: ''
     });
   }
-
   return experiences;
 }
 
+/**
+ * Formations
+ */
+export function extractFormations(text: string): Formation[] {
+  const regex = /(?:formation|dipl[oô]me|études?|licence|master|bac[+\s]?[0-9]*)\s*[:\-]?\s*([^\n]+)/gi;
+  const formations: Formation[] = [];
+  let m;
+  while ((m = regex.exec(text)) !== null) {
+    formations.push({ raw: m[1].trim() });
+  }
+  return formations;
+}
 
-// Fonction pour extraire le texte depuis le buffer
+/**
+ * Langues
+ */
+export function extractLangues(text: string): Langue[] {
+  const regex = /([A-ZÉ][a-zA-Zéàè]+(?:\s+[A-Z][a-z]+)*)\s*[:\-–]\s*([A-Za-z0-9\s-]+)/g;
+  const langues: Langue[] = [];
+  let m;
+  while ((m = regex.exec(text)) !== null) {
+    langues.push({ langue: m[1].trim(), niveau: m[2].trim() });
+  }
+  return langues;
+}
+
+/**
+ * Texte depuis buffer
+ */
 export async function extractTextFromBuffer(fileBuffer: Buffer, fileName: string): Promise<string> {
   if (fileName.endsWith('.pdf')) {
     const pdf = (await import('pdf-parse')).default;
@@ -109,30 +125,29 @@ export async function extractTextFromBuffer(fileBuffer: Buffer, fileName: string
     const result = await mammoth.extractRawText({ buffer: fileBuffer });
     return result.value;
   } else {
-    throw new Error('Format de fichier non supporté. Utilisez PDF ou DOCX.');
+    throw new Error('Format non supporté (PDF ou DOCX seulement)');
   }
 }
 
+/**
+ * Extraction principale
+ */
 export async function extractCVData(fileBuffer: Buffer, fileName: string): Promise<Candidat> {
   const text = await extractTextFromBuffer(fileBuffer, fileName);
+  const { nom, prenom } = extractNomPrenom(text);
 
   return {
-    nom: extractNom(text),
-    prenom: extractPrenom(text),
+    nom,
+    prenom,
     email: extractEmail(text),
+    entreprise: extractEntreprise(text),
+    poste: extractPoste(text),
     telephone: extractTelephone(text),
-    adresse: extractAdresse(text),
-    competences: extractCompetences(text) || [],       // jamais null
-    experiences: extractExperiences(text) || [],       // jamais null
+    adresse: null, // tu peux ajouter une regex pour l'adresse
+    competences: extractCompetences(text),
+    experiences: extractExperiences(text),
     linkedin: extractLinkedIn(text),
-    formations: extractFormations(text) || [],         // jamais null
-    langues: extractLangues(text) || [],               // jamais null
+    formations: extractFormations(text),
+    langues: extractLangues(text)
   };
-}
-
-
-// Fonction pour extraire LinkedIn (exemple basique)
-export function extractLinkedIn(text: string): string | null {
-  const match = text.match(/linkedin\.com\/in\/([a-zA-Z0-9-]+)/);
-  return match ? `linkedin.com/in/${match[1]}` : null;
 }
