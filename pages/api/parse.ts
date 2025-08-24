@@ -1,3 +1,5 @@
+// pages/api/parse.ts
+// 
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../utils/supabase';
 import { extractCVData } from '../../utils/extractCVData';
@@ -8,39 +10,28 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { files } = req.body; // tableau de paths Supabase
-  const results: { path: string; extracted: Candidat }[] = [];
+  
+  const results: { path: string; extracted?: Candidat; error?: string }[] = [];
+for (const path of files) {
+    try {
+        const { data, error: downloadError } = await supabase.storage.from('truthtalent').download(path);
+        if (downloadError) throw new Error(downloadError.message);
 
-  for (const path of files) {
-    // 1. Télécharger le fichier
-    const { data, error: downloadError } = await supabase
-      .storage
-      .from('truthtalent')
-      .download(path);
-    if (downloadError) {
-      return res.status(500).json({ error: downloadError.message });
+        const buffer = Buffer.from(await data.arrayBuffer());
+        console.log('Fichier en cours :', path); // Log avant extraction
+        const extracted = await extractCVData(buffer, path);
+        console.log('Extraction CV :', extracted); // Log après extraction
+
+        const { error: dbError } = await supabase.from('candidats').insert([extracted]).select();
+        if (dbError) throw new Error(dbError.message);
+
+        results.push({ path, extracted });
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+    console.error('Erreur pour', path, ':', errorMessage);
+    results.push({ path, error: errorMessage });
     }
-
-    // 2. Extraire le texte
-    const buffer = Buffer.from(await data.arrayBuffer());
-    const extracted: Candidat = await extractCVData(buffer, path);
-
-    // 3. Insérer dans la base de données
-    const { error: dbError } = await supabase
-      .from('candidats')
-      .insert<Candidat>([extracted])
-      .select(); // Ajoute `.select()` pour retourner les données insérées (optionnel)
-
-    if (dbError) {
-      return res.status(500).json({ error: dbError.message });
-      console.log('Fichier en cours :', path);
-console.log('Nom de fichier détecté :', buffer);
-console.log('Extraction CV :', extracted);
-
-
-    }
-
-    results.push({ path, extracted });
-  }
+}
 
   res.status(200).json({ message: 'CV analysés et insérés', results });
 }

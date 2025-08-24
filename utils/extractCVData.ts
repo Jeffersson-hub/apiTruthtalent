@@ -1,7 +1,6 @@
 // utils/extractCVData.ts
 import { Candidat, Formation, Langue, Experience } from '../types/candidats';
 
-
 // Ensuite tu passes `fileBuffer` à ton extracteur
 // const candidatData = await extractCVData(fileBuffer, fileName);
 

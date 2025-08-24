@@ -1,3 +1,5 @@
+// script/uploadCV.ts
+// 
 import { readFile } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";

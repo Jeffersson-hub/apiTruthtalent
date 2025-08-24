@@ -16,7 +16,7 @@ router.post("/parse", async (_req: Request, res: Response) => {
   // 1️⃣ Lister les fichiers du bucket
   const { data: files, error: listError } = await supabase.storage
     .from("truthtalent")
-    .list("", { limit: 100 });
+    .list("cvs", { limit: 100 });
 
   if (listError) {
     console.error("❌ Erreur listage:", listError);
@@ -37,7 +37,7 @@ router.post("/parse", async (_req: Request, res: Response) => {
       console.log(`⬇ Téléchargement de: ${file.name}`);
 
       const { data: fileData, error: downloadError } = await supabase.storage
-        .from("truthtalent")
+        .from("truthtalent/cvs")
         .download(file.name);
 
       if (downloadError || !fileData) {
